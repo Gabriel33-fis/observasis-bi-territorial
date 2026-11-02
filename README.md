@@ -148,7 +148,9 @@ Contribuições são bem-vindas. Para propor mudanças:
 
 ## 📄 Licença
 
-Defina aqui a licença do projeto (por exemplo, MIT) e adicione o arquivo `LICENSE` na raiz do repositório.
+Este projeto está licenciado sob a Licença MIT. Consulte o arquivo LICENSE para ler o texto completo.
+
+Os dados utilizados pertencem às suas respectivas fontes (IBGE, MDR, DataSUS e Base dos Dados) e estão sujeitos aos termos de uso de cada instituição.
 
 ## ✍️ Autor
 
