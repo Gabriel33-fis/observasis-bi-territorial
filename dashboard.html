@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ObservaSIS - Saúde, Saneamento e Economia Integrada (PIB • SINAN • SNIS • SIM)</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            gov: {
+              50: '#f0f5ff',
+              100: '#e0ecff',
+              200: '#c5dbff',
+              500: '#0054d1',
+              600: '#0043aa',
+              700: '#003385',
+              800: '#03235b',
+              900: '#06173a',
+            },
+            health: {
+              500: '#ef4444',
+              600: '#dc2626',
+            },
+            water: {
+              500: '#0284c7',
+              600: '#0369a1',
+            },
+            econ: {
+              500: '#10b981',
+              600: '#059669',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .leaflet-container {
+      background-color: transparent !important;
+      font-family: 'Inter', sans-serif !important;
+    }
+    .custom-leaflet-tooltip {
+      background-color: rgba(15, 23, 42, 0.9) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      color: #fff !important;
+      border-radius: 8px !important;
+      padding: 8px 12px !important;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+      font-size: 12px !important;
+    }
+    .custom-leaflet-tooltip .leaflet-tooltip-pane {
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+    }
+    .custom-state-marker {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: white;
+      font-weight: 700;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 9999px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .custom-state-marker:hover {
+      transform: scale(1.18);
+      background: #0054d1;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.4);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(156, 163, 175, 0.7);
+    }
+  </style>
+</head>
+<body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col font-sans antialiased overflow-hidden transition-colors duration-200">
+
+  <!-- Header -->
+  <header class="h-16 shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between z-30 shadow-sm">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-gov-700 via-gov-500 to-sky-400 flex items-center justify-center text-white shadow-md shadow-gov-500/25">
+        <i data-lucide="shield-check" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">Observa<span class="text-gov-500">SIS</span></span>
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-gov-100 dark:bg-gov-900/60 text-gov-700 dark:text-gov-300">Brasil Real</span>
+        </div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">Plataforma Integrada de Evidências: PIB • SINAN • SNIS • SIM</p>
+      </div>
+    </div>
+
+    <!-- Quick Metrics & Global Controls -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <div class="hidden xl:flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 mr-2 border-r border-slate-200 dark:border-slate-800 pr-4">
+        <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><i data-lucide="coins" class="w-3.5 h-3.5"></i> PIB/IBGE</span>
+        <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400 flex items-center gap-1"><i data-lucide="droplet" class="w-3.5 h-3.5"></i> SNIS</span>
+        <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-rose-600 dark:text-rose-400 flex items-center gap-1"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> SINAN</span>
+        <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400 flex items-center gap-1"><i data-lucide="heart-pulse" class="w-3.5 h-3.5"></i> SIM</span>
+      </div>
+
+      <button onclick="exportCSVData()" class="flex items-center gap-1.5 px-3 py-1.5 bg-gov-500 hover:bg-gov-600 active:scale-95 text-white text-xs font-semibold rounded-lg shadow-sm shadow-gov-500/20 transition-all">
+        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+        <span class="hidden md:inline">Exportar CSV</span>
+      </button>
+
+      <button onclick="toggleDarkMode()" class="p-2 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+        <i data-lucide="sun" id="theme-sun-icon" class="w-4 h-4 hidden"></i>
+        <i data-lucide="moon" id="theme-moon-icon" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Filter Ribbon -->
+  <section class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-2.5 z-20">
+    <div class="flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="text-slate-400 font-medium">Região:</span>
+          <select id="filter-region" onchange="applyFilters()" class="bg-slate-100 dark:bg-slate-800 font-semibold text-slate-800 dark:text-slate-200 py-1.5 px-2.5 rounded-lg border border-transparent focus:border-gov-500 focus:outline-none">
+            <option value="ALL">Todas as Regiões (27 UFs)</option>
+            <option value="Norte">Norte (7 UFs)</option>
+            <option value="Nordeste">Nordeste (9 UFs)</option>
+            <option value="Centro-Oeste">Centro-Oeste (4 UFs)</option>
+            <option value="Sudeste">Sudeste (4 UFs)</option>
+            <option value="Sul">Sul (3 UFs)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <span class="text-slate-400 font-medium">Ano Base:</span>
+          <span class="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">2021 (Auditado)</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 text-slate-400 text-[11px]">
+        <span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Dados integrados via BigQuery / Base dos Dados</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-6">
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-water-500/50 transition">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">SNIS • Esgotamento</span>
+          <div class="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400">
+            <i data-lucide="droplets" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="flex items-baseline gap-2">
+            <h3 id="kpi-esgoto" class="text-2xl font-black text-slate-900 dark:text-white">0.0%</h3>
+            <span class="text-xs font-medium text-slate-400">cobertura média</span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center justify-between">
+            <span>Déficit populacional:</span>
+            <strong id="kpi-pop-defasada" class="text-amber-600 dark:text-amber-400 font-semibold">-</strong>
+          </p>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-400 to-sky-600"></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-rose-500/50 transition">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">•SINAN • Agravos Ambientais / Vetoriais</span>
+          <div class="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400">
+            <i data-lucide="bug" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="flex items-baseline gap-2">
+            <h3 id="kpi-sinan" class="text-2xl font-black text-slate-900 dark:text-white">0.0</h3>
+            <span class="text-xs font-medium text-slate-400">por 100k hab.</span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center justify-between">
+            <span>Total de notificações:</span>
+            <strong id="kpi-sinan-total" class="text-rose-600 dark:text-rose-400 font-semibold">-</strong>
+          </p>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-400 to-rose-600"></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-purple-500/50 transition">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">SIM • Óbitos Hídricos / Feco-Orais (CID A00-A09)</span>
+          <div class="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400">
+            <i data-lucide="heart-crack" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="flex items-baseline gap-2">
+            <h3 id="kpi-mortalidade" class="text-2xl font-black text-slate-900 dark:text-white">0.0</h3>
+            <span class="text-xs font-medium text-slate-400">por 100k hab.</span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center justify-between">
+            <span>Total de óbitos registrados:</span>
+            <strong id="kpi-obitos-evitaveis" class="text-purple-600 dark:text-purple-400 font-semibold">-</strong>
+          </p>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-400 to-purple-600"></div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-emerald-500/50 transition">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">PIB • Riqueza per capita</span>
+          <div class="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400">
+            <i data-lucide="trending-up" class="w-4 h-4"></i>
+          </div>
+        </div>
+        <div class="mt-3">
+          <div class="flex items-baseline gap-2">
+            <h3 id="kpi-pib" class="text-2xl font-black text-slate-900 dark:text-white">R$ 0</h3>
+            <span class="text-xs font-medium text-slate-400">média ponderada</span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center justify-between">
+            <span>População analisada:</span>
+            <strong id="kpi-pop-total" class="text-emerald-600 dark:text-emerald-400 font-semibold">-</strong>
+          </p>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 to-emerald-600"></div>
+      </div>
+    </div>
+
+    <!-- Map & Spotlight -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm flex flex-col">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="p-1 rounded-md bg-gov-100 dark:bg-gov-900/50 text-gov-600 dark:text-gov-400">
+                <i data-lucide="map" class="w-4 h-4"></i>
+              </span>
+              <h2 class="text-base font-bold text-slate-900 dark:text-white">Distribuição Espacial Federativa</h2>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Clique em um estado para inspecionar os cruzamentos de dados</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <label for="map-metric" class="text-xs font-medium text-slate-500">Métrica:</label>
+            <select id="map-metric" onchange="updateMapVisuals()" class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs py-1.5 px-3 rounded-xl border border-transparent focus:border-gov-500 focus:outline-none">
+              <option value="coleta_esgoto_pct">SNIS: % Coleta Esgoto</option>
+              <option value="atendimento_agua_pct">SNIS: % Atendimento Água</option>
+              <option value="taxa_sinan_100k">SINAN: Notificações / 100k hab</option>
+              <option value="taxa_mortalidade_100k">SIM: Mortalidade / 100k hab</option>
+              <option value="pib_per_capita">PIB per Capita (R$)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="relative w-full h-[460px] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+          <div id="brazil-map" class="w-full h-full z-10"></div>
+          
+          <div id="map-legend" class="absolute bottom-4 left-4 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg text-xs min-w-[200px]">
+            <h4 id="legend-title" class="font-bold text-[11px] uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">Escala</h4>
+            <div id="legend-scale" class="space-y-1"></div>
+          </div>
+
+          <button onclick="resetMapView()" class="absolute top-4 right-4 z-20 bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium shadow-md transition flex items-center gap-1.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Resetar Zoom
+          </button>
+        </div>
+
+        <div class="mt-3 flex items-center justify-between text-[11px] text-slate-400">
+          <span>* Dados tratados a partir de microdados públicos oficiais</span>
+          <span class="flex items-center gap-1"><i data-lucide="mouse-pointer-click" class="w-3 h-3"></i> Interativo via Leaflet</span>
+        </div>
+      </div>
+
+      <!-- Spotlight -->
+      <div class="lg:col-span-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div>
+              <span id="spotlight-region" class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">Região -</span>
+              <h3 id="spotlight-uf-name" class="text-xl font-black text-slate-900 dark:text-white mt-1">Selecione uma UF</h3>
+              <p id="spotlight-pop" class="text-xs text-slate-400">População Estimada: -</p>
+            </div>
+            <div id="spotlight-uf-badge" class="h-10 w-10 rounded-xl bg-gov-500/10 dark:bg-gov-500/20 text-gov-600 dark:text-gov-400 font-black text-sm flex items-center justify-center">
+              --
+            </div>
+          </div>
+
+          <div class="mt-4 space-y-3">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
+                  <i data-lucide="droplet" class="w-3.5 h-3.5"></i> Saneamento Básico (SNIS)
+                </span>
+                <span id="spot-saneamento-rank" class="text-[10px] font-bold text-slate-400">-</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span class="text-slate-400 text-[11px] block">Água Tratada:</span>
+                  <strong id="spot-agua" class="font-bold text-slate-800 dark:text-white text-sm">-</strong>
+                </div>
+                <div>
+                  <span class="text-slate-400 text-[11px] block">Esgoto Coletado:</span>
+                  <strong id="spot-esgoto" class="font-bold text-slate-800 dark:text-white text-sm">-</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                  <i data-lucide="activity" class="w-3.5 h-3.5"></i> Mortalidade (SIM)
+                </span>
+                <span id="spot-sim-status" class="text-[10px] font-semibold text-slate-400">-</span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <div>
+                  <span id="spot-mortalidade" class="text-lg font-black text-slate-900 dark:text-white">-</span>
+                  <span class="text-[11px] text-slate-400 ml-1">por 100k hab.</span>
+                </div>
+                <div class="text-right text-[11px] text-slate-400">
+                  Total de Óbitos: <strong id="spot-obitos-totais" class="text-slate-700 dark:text-slate-200">-</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                  <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Notificações (SINAN)
+                </span>
+                <span id="spot-sinan-rate" class="text-xs font-bold text-slate-800 dark:text-white">-</span>
+              </div>
+              <div class="flex items-baseline justify-between mt-2 pt-2 border-t border-slate-200/50 dark:border-slate-700/50">
+                <span class="text-slate-400 text-xs">Total de Notificações:</span>
+                <strong id="spot-sinan-total" class="text-rose-500 font-bold text-sm">-</strong>
+              </div>
+            </div>
+
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                  <i data-lucide="coins" class="w-3.5 h-3.5"></i> PIB per Capita (IBGE)
+                </span>
+                <span id="spot-pib" class="text-xs font-extrabold text-slate-900 dark:text-white">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="font-medium text-slate-500">Índice Sintético de Vulnerabilidade:</span>
+            <span id="spot-vuln-label" class="font-bold text-emerald-600">-</span>
+          </div>
+          <div class="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+            <div id="spot-vuln-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="p-1 rounded-md bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400">
+                  <i data-lucide="git-commit" class="w-4 h-4"></i>
+                </span>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Cruzamento Multidimensional (Dispersão)</h3>
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">Analise correlações empíricas com cálculo instantâneo do Coeficiente de Pearson (r)</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              <div class="flex items-center gap-1">
+                <span class="text-slate-400 font-medium">Eixo X:</span>
+                <select id="scatter-x" onchange="renderScatterPlot()" class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold py-1 px-2 rounded-lg border border-transparent focus:border-gov-500">
+                  <option value="coleta_esgoto_pct">Cobertura de Esgoto % (SNIS)</option>
+                  <option value="atendimento_agua_pct">Cobertura de Água % (SNIS)</option>
+                  <option value="pib_per_capita">PIB per Capita (IBGE)</option>
+                </select>
+              </div>
+
+              <div class="flex items-center gap-1">
+                <span class="text-slate-400 font-medium">Eixo Y:</span>
+                <select id="scatter-y" onchange="renderScatterPlot()" class="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold py-1 px-2 rounded-lg border border-transparent focus:border-gov-500">
+                  <option value="taxa_mortalidade_100k">Mortalidade / 100k (SIM)</option>
+                  <option value="taxa_sinan_100k">Notificações / 100k (SINAN)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="w-full h-80 relative">
+            <canvas id="scatterChart"></canvas>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="text-slate-500 dark:text-slate-400 font-medium">Coeficiente de Pearson (r):</span>
+            <span id="pearson-value" class="font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs">-</span>
+          </div>
+          <span class="text-slate-400 text-[11px]">Tamanho da bolha = <strong>PIB per Capita</strong> • Cores = <strong>Macrorregião</strong></span>
+        </div>
+      </div>
+
+      <div class="lg:col-span-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white">Disparidade Regional</h3>
+              <p class="text-xs text-slate-400">Médias agregadas por macrorregiões brasileiras</p>
+            </div>
+            <span class="p-1 rounded-md bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400">
+              <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+            </span>
+          </div>
+
+          <div class="w-full h-72">
+            <canvas id="regionBarChart"></canvas>
+          </div>
+        </div>
+
+        <div class="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400">
+          <p><strong class="text-slate-700 dark:text-slate-200">Análise de BI:</strong> O gráfico evidencia a assimetria na infraestrutura de saneamento entre as macrorregiões do país.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div class="p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-bold text-slate-900 dark:text-white text-base">Matriz Comparativa das 27 Unidades Federativas</h3>
+          <p class="text-xs text-slate-400">Dados consolidados unificados (PIB, SNIS, SINAN, SIM)</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input 
+              id="table-search" 
+              type="text" 
+              oninput="filterTableRows()" 
+              placeholder="Filtrar por UF..." 
+              class="pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 rounded-xl border border-transparent focus:border-gov-500 focus:outline-none w-48 sm:w-56 text-slate-800 dark:text-slate-200"
+            >
+          </div>
+          <button onclick="exportCSVData()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition">
+            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> Exportar CSV
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-left text-xs">
+          <thead class="sticky top-0 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-700 z-10">
+            <tr>
+              <th onclick="sortTable('uf')" class="py-3 px-4 cursor-pointer hover:text-gov-500">UF <i data-lucide="arrow-up-down" class="w-3 h-3 inline"></i></th>
+              <th onclick="sortTable('nome')" class="py-3 px-4 cursor-pointer hover:text-gov-500">Estado</th>
+              <th onclick="sortTable('regiao')" class="py-3 px-4 cursor-pointer hover:text-gov-500">Região</th>
+              <th onclick="sortTable('coleta_esgoto_pct')" class="py-3 px-4 cursor-pointer hover:text-gov-500 text-right">Esgoto % (SNIS)</th>
+              <th onclick="sortTable('atendimento_agua_pct')" class="py-3 px-4 cursor-pointer hover:text-gov-500 text-right">Água % (SNIS)</th>
+              <th onclick="sortTable('taxa_sinan_100k')" class="py-3 px-4 cursor-pointer hover:text-gov-500 text-right">Notif. / 100k (SINAN)</th>
+              <th onclick="sortTable('taxa_mortalidade_100k')" class="py-3 px-4 cursor-pointer hover:text-gov-500 text-right">Mort. / 100k (SIM)</th>
+              <th onclick="sortTable('pib_per_capita')" class="py-3 px-4 cursor-pointer hover:text-gov-500 text-right">PIB per Capita (R$)</th>
+            </tr>
+          </thead>
+          <tbody id="state-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-700 dark:text-slate-300">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="p-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+        <span id="table-count-label">Exibindo 27 de 27 estados</span>
+        <span>Fontes: IBGE (Contas Regionais), SNIS (Diagnóstico Água e Esgotos), DATASUS (SIM/SINAN)</span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl shadow-2xl transition-all transform translate-y-16 opacity-0">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-500 shrink-0"></i>
+    <span id="toast-text" class="text-xs font-medium">Relatório gerado com sucesso!</span>
+  </div>
+
+  <script>
+    // Dicionário com metadados geográficos das 27 UFs
+    const UF_METADATA = {
+      'AC': { nome: 'Acre', lat: -9.0238, lng: -70.812 },
+      'AL': { nome: 'Alagoas', lat: -9.5713, lng: -36.782 },
+      'AM': { nome: 'Amazonas', lat: -3.4168, lng: -65.856 },
+      'AP': { nome: 'Amapá', lat: 1.41, lng: -51.77 },
+      'BA': { nome: 'Bahia', lat: -12.9714, lng: -38.5014 },
+      'CE': { nome: 'Ceará', lat: -5.4984, lng: -39.3206 },
+      'DF': { nome: 'Distrito Federal', lat: -15.7998, lng: -47.8645 },
+      'ES': { nome: 'Espírito Santo', lat: -19.1834, lng: -40.3089 },
+      'GO': { nome: 'Goiás', lat: -15.827, lng: -49.8362 },
+      'MA': { nome: 'Maranhão', lat: -5.42, lng: -45.44 },
+      'MG': { nome: 'Minas Gerais', lat: -18.5122, lng: -44.555 },
+      'MS': { nome: 'Mato Grosso do Sul', lat: -20.7722, lng: -54.7852 },
+      'MT': { nome: 'Mato Grosso', lat: -12.6819, lng: -56.9211 },
+      'PA': { nome: 'Pará', lat: -3.79, lng: -52.48 },
+      'PB': { nome: 'Paraíba', lat: -7.24, lng: -36.78 },
+      'PE': { nome: 'Pernambuco', lat: -8.8137, lng: -36.9541 },
+      'PI': { nome: 'Piauí', lat: -7.7183, lng: -42.7289 },
+      'PR': { nome: 'Paraná', lat: -24.89, lng: -51.55 },
+      'RJ': { nome: 'Rio de Janeiro', lat: -22.9068, lng: -43.1729 },
+      'RN': { nome: 'Rio Grande do Norte', lat: -5.7945, lng: -36.5615 },
+      'RO': { nome: 'Rondônia', lat: -11.5057, lng: -63.5806 },
+      'RR': { nome: 'Roraima', lat: 2.7376, lng: -62.0751 },
+      'RS': { nome: 'Rio Grande do Sul', lat: -30.0346, lng: -51.2177 },
+      'SC': { nome: 'Santa Catarina', lat: -27.2423, lng: -50.2189 },
+      'SE': { nome: 'Sergipe', lat: -10.5741, lng: -37.3857 },
+      'SP': { nome: 'São Paulo', lat: -23.5505, lng: -46.6333 },
+      'TO': { nome: 'Tocantins', lat: -10.1753, lng: -48.2982 }
+    };
+
+    let BRAZIL_DATA = [];
+    let currentFilteredData = [];
+    let selectedUF = 'SP';
+    let leafletMap = null;
+    let geojsonLayer = null;
+    let markersLayer = null;
+    let scatterChartInstance = null;
+    let barChartInstance = null;
+    let sortColumn = 'coleta_esgoto_pct';
+    let sortAsc = false;
+
+    const METRIC_CONFIG = {
+      coleta_esgoto_pct: { label: 'SNIS: Esgoto Coletado (%)', unit: '%', min: 0, max: 100, invertColor: false },
+      atendimento_agua_pct: { label: 'SNIS: Água Tratada (%)', unit: '%', min: 30, max: 100, invertColor: false },
+      taxa_sinan_100k: { label: 'SINAN: Taxa / 100k hab', unit: '', min: 10, max: 2000, invertColor: true },
+      taxa_mortalidade_100k: { 
+  label: 'SIM: Óbitos Hídricos / 100k hab (CID A00-A09)', 
+  unit: '', 
+  min: 0, 
+  max: 12, 
+  invertColor: true 
+},
+      pib_per_capita: { label: 'PIB per Capita (R$)', unit: 'R$', min: 15000, max: 90000, invertColor: false },
+    };
+
+    function initTheme() {
+      const isDark = localStorage.getItem('obs_theme') === 'dark' || 
+        (!('obs_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        document.getElementById('theme-moon-icon').classList.add('hidden');
+        document.getElementById('theme-sun-icon').classList.remove('hidden');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('theme-moon-icon').classList.remove('hidden');
+        document.getElementById('theme-sun-icon').classList.add('hidden');
+      }
+    }
+
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('obs_theme', isDark ? 'dark' : 'light');
+      document.getElementById('theme-moon-icon').classList.toggle('hidden', isDark);
+      document.getElementById('theme-sun-icon').classList.toggle('hidden', !isDark);
+
+      updateMapTileLayer();
+      renderScatterPlot();
+      renderRegionBarChart();
+    }
+
+    function getColorForValue(val, metricKey) {
+      const conf = METRIC_CONFIG[metricKey];
+      const norm = Math.max(0, Math.min(1, (val - conf.min) / (conf.max - conf.min)));
+      const effective = conf.invertColor ? (1 - norm) : norm;
+
+      if (effective < 0.25) return '#ef4444';
+      if (effective < 0.50) return '#f97316';
+      if (effective < 0.70) return '#eab308';
+      if (effective < 0.85) return '#06b6d4';
+      return '#10b981';
+    }
+
+    let tileLayerRef = null;
+
+    function initMap() {
+      leafletMap = L.map('brazil-map', {
+        center: [-14.235, -53.18],
+        zoom: 4,
+        minZoom: 3,
+        maxZoom: 7,
+        zoomControl: false,
+        attributionControl: false
+      });
+
+      L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
+      updateMapTileLayer();
+
+      markersLayer = L.layerGroup().addTo(leafletMap);
+
+      fetch('https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/brazil-states.geojson')
+        .then(res => res.json())
+        .then(geojson => {
+          geojsonLayer = L.geoJSON(geojson, {
+            style: styleGeoJsonFeature,
+            onEachFeature: onEachStateFeature
+          }).addTo(leafletMap);
+          buildStateMarkers();
+          updateLegend();
+        })
+        .catch(() => {
+          buildStateMarkers();
+          updateLegend();
+        });
+    }
+
+    function updateMapTileLayer() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (tileLayerRef) {
+        leafletMap.removeLayer(tileLayerRef);
+      }
+      const tileUrl = isDark
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+      
+      tileLayerRef = L.tileLayer(tileUrl, { maxZoom: 18 }).addTo(leafletMap);
+      if (geojsonLayer) geojsonLayer.bringToFront();
+      if (markersLayer) markersLayer.bringToFront();
+    }
+
+    function styleGeoJsonFeature(feature) {
+      const sigla = feature.properties.sigla || feature.properties.UF || feature.properties.name;
+      const data = BRAZIL_DATA.find(d => d.uf === sigla || (d.nome && d.nome.toLowerCase() === (feature.properties.name || '').toLowerCase()));
+      const metric = document.getElementById('map-metric').value;
+
+      if (!data) {
+        return {
+          fillColor: '#94a3b8',
+          weight: 1,
+          opacity: 0.8,
+          color: '#ffffff',
+          fillOpacity: 0.4
+        };
+      }
+
+      const val = data[metric] || 0;
+      const color = getColorForValue(val, metric);
+      const isSelected = data.uf === selectedUF;
+
+      return {
+        fillColor: color,
+        weight: isSelected ? 3 : 1.2,
+        opacity: 1,
+        color: isSelected ? '#38bdf8' : '#ffffff',
+        fillOpacity: isSelected ? 0.9 : 0.65
+      };
+    }
+
+    function onEachStateFeature(feature, layer) {
+      const sigla = feature.properties.sigla || feature.properties.UF;
+      const data = BRAZIL_DATA.find(d => d.uf === sigla || (d.nome && d.nome.toLowerCase() === (feature.properties.name || '').toLowerCase()));
+
+      if (data) {
+        layer.on({
+          mouseover: (e) => {
+            const l = e.target;
+            l.setStyle({ weight: 3, color: '#f8fafc', fillOpacity: 0.85 });
+            l.bringToFront();
+          },
+          mouseout: (e) => {
+            if (geojsonLayer) geojsonLayer.resetStyle(e.target);
+          },
+          click: () => {
+            selectState(data.uf);
+          }
+        });
+
+        const metric = document.getElementById('map-metric').value;
+        const valFormatted = metric === 'pib_per_capita' 
+          ? `R$ ${Number(data.pib_per_capita).toLocaleString('pt-BR')}` 
+          : `${data[metric]}${METRIC_CONFIG[metric].unit}`;
+
+        layer.bindTooltip(`
+          <div class="leading-tight">
+            <strong class="text-sm">${data.nome} (${data.uf})</strong><br/>
+            <span class="text-slate-300 text-xs">${METRIC_CONFIG[metric].label}:</span> 
+            <strong class="text-sky-300">${valFormatted}</strong>
+          </div>
+        `, { className: 'custom-leaflet-tooltip', sticky: true });
+      }
+    }
+
+    function buildStateMarkers() {
+      markersLayer.clearLayers();
+      const metric = document.getElementById('map-metric').value;
+
+      BRAZIL_DATA.forEach(d => {
+        if (!d.lat || !d.lng) return;
+        const icon = L.divIcon({
+          className: '',
+          html: `<div class="custom-state-marker w-7 h-7 ${d.uf === selectedUF ? 'ring-2 ring-white scale-110 !bg-gov-600' : ''}" onclick="selectState('${d.uf}')">${d.uf}</div>`,
+          iconSize: [28, 28],
+          iconAnchor: [14, 14]
+        });
+
+        const marker = L.marker([d.lat, d.lng], { icon: icon });
+        marker.bindTooltip(`
+          <div>
+            <strong>${d.nome} (${d.uf})</strong> - ${d.regiao}<br/>
+            ${METRIC_CONFIG[metric].label}: <b>${d[metric]}${METRIC_CONFIG[metric].unit}</b>
+          </div>
+        `, { className: 'custom-leaflet-tooltip' });
+
+        marker.on('click', () => selectState(d.uf));
+        markersLayer.addLayer(marker);
+      });
+    }
+
+    function updateMapVisuals() {
+      if (geojsonLayer) {
+        geojsonLayer.eachLayer(layer => {
+          geojsonLayer.resetStyle(layer);
+        });
+      }
+      buildStateMarkers();
+      updateLegend();
+    }
+
+    function updateLegend() {
+      const metric = document.getElementById('map-metric').value;
+      const conf = METRIC_CONFIG[metric];
+      document.getElementById('legend-title').innerText = conf.label;
+
+      const container = document.getElementById('legend-scale');
+      container.innerHTML = '';
+
+      const steps = 5;
+      const stepVal = (conf.max - conf.min) / steps;
+
+      for (let i = 0; i < steps; i++) {
+        const val1 = conf.min + (i * stepVal);
+        const val2 = conf.min + ((i + 1) * stepVal);
+        const color = getColorForValue((val1 + val2) / 2, metric);
+
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2';
+        row.innerHTML = `
+          <span class="w-3.5 h-3 rounded shadow-xs shrink-0" style="background-color: ${color}"></span>
+          <span class="text-slate-600 dark:text-slate-400 font-mono text-[10px]">${Math.round(val1)} a ${Math.round(val2)} ${conf.unit}</span>
+        `;
+        container.appendChild(row);
+      }
+    }
+
+    function resetMapView() {
+      leafletMap.setView([-14.235, -53.18], 4);
+    }
+
+    function selectState(uf) {
+      selectedUF = uf;
+      const data = BRAZIL_DATA.find(d => d.uf === uf);
+      if (!data) return;
+
+      document.getElementById('spotlight-uf-name').innerText = data.nome;
+      document.getElementById('spotlight-uf-badge').innerText = data.uf;
+      document.getElementById('spotlight-region').innerText = `Região ${data.regiao}`;
+      document.getElementById('spotlight-pop').innerText = `População Estimada: ${(data.populacao / 1000000).toFixed(1)} mi habitantes`;
+      
+      document.getElementById('spot-agua').innerText = `${data.atendimento_agua_pct}%`;
+      document.getElementById('spot-esgoto').innerText = `${data.coleta_esgoto_pct}%`;
+      
+      document.getElementById('spot-mortalidade').innerText = data.taxa_mortalidade_100k;
+      document.getElementById('spot-obitos-totais').innerText = Number(data.total_obitos).toLocaleString('pt-BR');
+      document.getElementById('spot-sinan-rate').innerText = `${data.taxa_sinan_100k} / 100k`;
+      document.getElementById('spot-sinan-total').innerText = Number(data.total_notificacoes).toLocaleString('pt-BR');
+      document.getElementById('spot-pib').innerText = `R$ ${Number(data.pib_per_capita).toLocaleString('pt-BR')}`;
+
+      const sortedSan = [...BRAZIL_DATA].sort((a,b) => b.coleta_esgoto_pct - a.coleta_esgoto_pct);
+      const rank = sortedSan.findIndex(i => i.uf === uf) + 1;
+      document.getElementById('spot-saneamento-rank').innerText = `${rank}º do Brasil`;
+
+      // Vulnerability Synthetic index
+      const vulnScore = (100 - data.coleta_esgoto_pct) * 0.5 + (data.taxa_mortalidade_100k / 1000 * 50);
+      const vulnBar = document.getElementById('spot-vuln-bar');
+      const vulnLabel = document.getElementById('spot-vuln-label');
+      
+      vulnBar.style.width = `${Math.min(100, Math.round(vulnScore))}%`;
+      if (vulnScore < 35) {
+        vulnLabel.innerText = 'Baixa Vulnerabilidade';
+        vulnLabel.className = 'font-bold text-emerald-600';
+        vulnBar.className = 'h-full bg-emerald-500 rounded-full transition-all duration-300';
+      } else if (vulnScore < 60) {
+        vulnLabel.innerText = 'Média Vulnerabilidade';
+        vulnLabel.className = 'font-bold text-amber-500';
+        vulnBar.className = 'h-full bg-amber-500 rounded-full transition-all duration-300';
+      } else {
+        vulnLabel.innerText = 'Alta Vulnerabilidade Crítica';
+        vulnLabel.className = 'font-bold text-rose-500';
+        vulnBar.className = 'h-full bg-rose-500 rounded-full transition-all duration-300';
+      }
+
+      if (data.lat && data.lng) {
+        leafletMap.flyTo([data.lat, data.lng], 5.5, { duration: 0.8 });
+      }
+      updateMapVisuals();
+    }
+
+    function calculatePearson(xArr, yArr) {
+      const n = xArr.length;
+      if (n === 0) return 0;
+      const meanX = xArr.reduce((a, b) => a + b, 0) / n;
+      const meanY = yArr.reduce((a, b) => a + b, 0) / n;
+
+      let num = 0, denX = 0, denY = 0;
+      for (let i = 0; i < n; i++) {
+        const dx = xArr[i] - meanX;
+        const dy = yArr[i] - meanY;
+        num += dx * dy;
+        denX += dx * dx;
+        denY += dy * dy;
+      }
+      if (denX === 0 || denY === 0) return 0;
+      return num / Math.sqrt(denX * denY);
+    }
+
+    const REGION_COLORS = {
+      'Norte': '#0284c7',
+      'Nordeste': '#f59e0b',
+      'Centro-Oeste': '#8b5cf6',
+      'Sudeste': '#10b981',
+      'Sul': '#ec4899',
+    };
+
+    function renderScatterPlot() {
+      const ctx = document.getElementById('scatterChart').getContext('2d');
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+      const gridColor = isDark ? 'rgba(51, 65, 85, 0.4)' : 'rgba(226, 232, 240, 0.7)';
+
+      const xKey = document.getElementById('scatter-x').value;
+      const yKey = document.getElementById('scatter-y').value;
+
+      const xVals = currentFilteredData.map(d => Number(d[xKey]) || 0);
+      const yVals = currentFilteredData.map(d => Number(d[yKey]) || 0);
+      const r = calculatePearson(xVals, yVals);
+
+      const pearsonEl = document.getElementById('pearson-value');
+      let interp = '';
+      if (Math.abs(r) > 0.65) interp = r < 0 ? 'Forte Inversa' : 'Forte Direta';
+      else if (Math.abs(r) > 0.35) interp = r < 0 ? 'Moderada Inversa' : 'Moderada Direta';
+      else interp = 'Fraca / Dispersa';
+      
+      pearsonEl.innerText = `${r.toFixed(2)} (${interp})`;
+      pearsonEl.className = Math.abs(r) > 0.4 
+        ? 'font-mono font-bold px-2 py-0.5 rounded bg-gov-100 dark:bg-gov-900/60 text-gov-600 dark:text-gov-400 text-xs'
+        : 'font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs';
+
+      const datasets = Object.keys(REGION_COLORS).map(reg => {
+        const statesInReg = currentFilteredData.filter(d => d.regiao === reg);
+        return {
+          label: reg,
+          data: statesInReg.map(d => ({
+            x: Number(d[xKey]) || 0,
+            y: Number(d[yKey]) || 0,
+            r: Math.max(5, Math.min(18, (Number(d.pib_per_capita) / 85000) * 16)),
+            state: d
+          })),
+          backgroundColor: REGION_COLORS[reg] + 'aa',
+          borderColor: REGION_COLORS[reg],
+          borderWidth: 1.5,
+          hoverBorderWidth: 3
+        };
+      }).filter(ds => ds.data.length > 0);
+
+      if (scatterChartInstance) scatterChartInstance.destroy();
+
+      scatterChartInstance = new Chart(ctx, {
+        type: 'bubble',
+        data: { datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 10,
+                font: { size: 10, family: 'Inter' },
+                color: textColor
+              }
+            },
+            tooltip: {
+              callbacks: {
+                title: (items) => {
+                  const raw = items[0].raw.state;
+                  return `${raw.nome} (${raw.uf}) - Região ${raw.regiao}`;
+                },
+                label: (item) => {
+                  const s = item.raw.state;
+                  return [
+                    `Eixo X: ${item.raw.x}`,
+                    `Eixo Y: ${item.raw.y}`,
+                    `PIB per capita: R$ ${Number(s.pib_per_capita).toLocaleString('pt-BR')}`
+                  ];
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: METRIC_CONFIG[xKey]?.label || xKey,
+                color: textColor,
+                font: { size: 11, weight: '600' }
+              },
+              grid: { color: gridColor },
+              ticks: { color: textColor }
+            },
+            y: {
+              title: {
+                display: true,
+                text: METRIC_CONFIG[yKey]?.label || yKey,
+                color: textColor,
+                font: { size: 11, weight: '600' }
+              },
+              grid: { color: gridColor },
+              ticks: { color: textColor }
+            }
+          },
+          onClick: (evt, activeEls) => {
+            if (activeEls.length > 0) {
+              const datasetIndex = activeEls[0].datasetIndex;
+              const index = activeEls[0].index;
+              const clickedState = datasets[datasetIndex].data[index].state;
+              selectState(clickedState.uf);
+            }
+          }
+        }
+      });
+    }
+
+    function renderRegionBarChart() {
+      const ctx = document.getElementById('regionBarChart').getContext('2d');
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#94a3b8' : '#64748b';
+      const gridColor = isDark ? 'rgba(51, 65, 85, 0.4)' : 'rgba(226, 232, 240, 0.7)';
+
+      const regions = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'];
+      const avgEsgoto = [];
+      const avgMortalidade = [];
+
+      regions.forEach(reg => {
+        const subset = BRAZIL_DATA.filter(d => d.regiao === reg);
+        if (subset.length === 0) {
+          avgEsgoto.push(0);
+          avgMortalidade.push(0);
+          return;
+        }
+        const meanEsg = subset.reduce((acc, curr) => acc + (Number(curr.coleta_esgoto_pct) || 0), 0) / subset.length;
+        const meanMort = subset.reduce((acc, curr) => acc + (Number(curr.taxa_mortalidade_100k) || 0), 0) / subset.length;
+        avgEsgoto.push(parseFloat(meanEsg.toFixed(1)));
+        avgMortalidade.push(parseFloat(meanMort.toFixed(1)));
+      });
+
+      if (barChartInstance) barChartInstance.destroy();
+
+      barChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: regions,
+          datasets: [
+            {
+              label: 'Esgoto Coletado (%)',
+              data: avgEsgoto,
+              backgroundColor: '#0284c7',
+              borderRadius: 6
+            },
+            {
+              label: 'Mortalidade / 100k hab',
+              data: avgMortalidade,
+              backgroundColor: '#ef4444',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 10,
+                color: textColor,
+                font: { size: 10, family: 'Inter' }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: textColor, font: { size: 10 } }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { size: 10 } }
+            }
+          }
+        }
+      });
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('state-table-body');
+      tbody.innerHTML = '';
+
+      currentFilteredData.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.className = `hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer ${d.uf === selectedUF ? 'bg-gov-50/80 dark:bg-gov-950/40 font-semibold' : ''}`;
+        
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-bold text-gov-600 dark:text-gov-400">${d.uf}</td>
+          <td class="py-3 px-4 text-slate-900 dark:text-white font-medium">${d.nome}</td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              ${d.regiao}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-right ${d.coleta_esgoto_pct < 40 ? 'text-rose-500 font-bold' : ''}">${d.coleta_esgoto_pct}%</td>
+          <td class="py-3 px-4 text-right">${d.atendimento_agua_pct}%</td>
+          <td class="py-3 px-4 text-right">${d.taxa_sinan_100k}</td>
+          <td class="py-3 px-4 text-right font-bold">${d.taxa_mortalidade_100k}</td>
+          <td class="py-3 px-4 text-right font-mono">R$ ${Number(d.pib_per_capita).toLocaleString('pt-BR')}</td>
+        `;
+
+        tr.onclick = () => selectState(d.uf);
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('table-count-label').innerText = `Exibindo ${currentFilteredData.length} de ${BRAZIL_DATA.length} estados`;
+      lucide.createIcons();
+    }
+
+    function sortTable(column) {
+      if (sortColumn === column) {
+        sortAsc = !sortAsc;
+      } else {
+        sortColumn = column;
+        sortAsc = false;
+      }
+
+      currentFilteredData.sort((a, b) => {
+        let valA = a[column];
+        let valB = b[column];
+
+        if (typeof valA === 'string') {
+          return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        }
+        return sortAsc ? valA - valB : valB - valA;
+      });
+
+      renderTable();
+    }
+
+    function filterTableRows() {
+      const q = document.getElementById('table-search').value.toLowerCase();
+      currentFilteredData = BRAZIL_DATA.filter(d => 
+        (d.nome && d.nome.toLowerCase().includes(q)) || (d.uf && d.uf.toLowerCase().includes(q))
+      );
+      renderTable();
+    }
+
+    function applyFilters() {
+      const reg = document.getElementById('filter-region').value;
+
+      currentFilteredData = BRAZIL_DATA.filter(d => {
+        return reg === 'ALL' || d.regiao === reg;
+      });
+
+      updateAggregateKPIs();
+      renderTable();
+      renderScatterPlot();
+      updateMapVisuals();
+    }
+
+    function updateAggregateKPIs() {
+      const count = currentFilteredData.length;
+      if (count === 0) return;
+
+      const totalPop = currentFilteredData.reduce((acc, d) => acc + Number(d.populacao), 0);
+      const avgEsgoto = currentFilteredData.reduce((acc, d) => acc + (Number(d.coleta_esgoto_pct) * Number(d.populacao)), 0) / (totalPop || 1);
+      const popSemEsgoto = totalPop * (1 - (avgEsgoto / 100));
+      const avgSinan = currentFilteredData.reduce((acc, d) => acc + (Number(d.taxa_sinan_100k) * Number(d.populacao)), 0) / (totalPop || 1);
+      const totalSinan = currentFilteredData.reduce((acc, d) => acc + Number(d.total_notificacoes), 0);
+      const avgMort = currentFilteredData.reduce((acc, d) => acc + (Number(d.taxa_mortalidade_100k) * Number(d.populacao)), 0) / (totalPop || 1);
+      const totalObitos = currentFilteredData.reduce((acc, d) => acc + Number(d.total_obitos), 0);
+      const avgPib = currentFilteredData.reduce((acc, d) => acc + (Number(d.pib_per_capita) * Number(d.populacao)), 0) / (totalPop || 1);
+
+      document.getElementById('kpi-esgoto').innerText = `${avgEsgoto.toFixed(1)}%`;
+      document.getElementById('kpi-pop-defasada').innerText = `~${(popSemEsgoto / 1000000).toFixed(1)} mi hab`;
+      document.getElementById('kpi-sinan').innerText = avgSinan.toFixed(1);
+      document.getElementById('kpi-sinan-total').innerText = `${totalSinan.toLocaleString('pt-BR')} notificações`;
+      document.getElementById('kpi-mortalidade').innerText = avgMort.toFixed(1);
+      document.getElementById('kpi-obitos-evitaveis').innerText = `${totalObitos.toLocaleString('pt-BR')} óbitos`;
+      document.getElementById('kpi-pib').innerText = `R$ ${Math.round(avgPib).toLocaleString('pt-BR')}`;
+      document.getElementById('kpi-pop-total').innerText = `${(totalPop / 1000000).toFixed(1)} mi hab`;
+    }
+
+    function exportCSVData() {
+      let csv = 'UF,Estado,Regiao,Populacao,PIB_per_Capita,Esgoto_SNIS_pct,Agua_SNIS_pct,SINAN_Taxa_100k,SIM_Taxa_Mortalidade_100k,Total_Obitos,Total_Notificacoes\n';
+      currentFilteredData.forEach(d => {
+        csv += `${d.uf},"${d.nome}",${d.regiao},${d.populacao},${d.pib_per_capita},${d.coleta_esgoto_pct},${d.atendimento_agua_pct},${d.taxa_sinan_100k},${d.taxa_mortalidade_100k},${d.total_obitos},${d.total_notificacoes}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `observasis_dados_brasil_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Base unificada (.CSV) exportada com sucesso!');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-text').innerText = msg;
+      toast.classList.remove('translate-y-16', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0');
+      }, 3500);
+    }
+
+    // Inicialização da Aplicação
+    window.onload = function() {
+      initTheme();
+      lucide.createIcons();
+      initMap();
+
+      // Carregar os dados reais do arquivo JSON exportado pelo script Python
+      fetch('dados_estados_dashboard.json')
+        .then(res => {
+          if (!res.ok) throw new Error("Arquivo local dados_estados_dashboard.json não encontrado");
+          return res.json();
+        })
+        .then(dadosReais => {
+          // Enriquecer com coordenadas geográficas e nomes
+          BRAZIL_DATA = dadosReais.map(d => ({
+            ...d,
+            nome: UF_METADATA[d.uf]?.nome || d.uf,
+            lat: UF_METADATA[d.uf]?.lat || -14.23,
+            lng: UF_METADATA[d.uf]?.lng || -51.92
+          }));
+
+          currentFilteredData = [...BRAZIL_DATA];
+          renderScatterPlot();
+          renderRegionBarChart();
+          renderTable();
+          updateAggregateKPIs();
+          updateMapVisuals();
+          selectState('SP');
+          showToast('Dados oficiais carregados com sucesso!');
+        })
+        .catch(err => {
+          console.warn("Aviso ao carregar JSON:", err);
+          showToast('Aviso: Certifique-se de executar via servidor local (python3 -m http.server 8000)');
+        });
+    };
+  </script>
+</body>
+</html>

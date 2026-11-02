@@ -1,0 +1,20 @@
+# Ambiente virtual Python
+.venv/
+env/
+venv/
+__pycache__/
+*.pyc
+
+# Ficheiros brutos e bases pesadas (gerados pelos scripts)
+fato_*.csv
+base_consolidada_municipios.csv
+dim_localidade.csv
+
+# Ficheiros de sistema e IDEs
+.vscode/
+.idea/
+.DS_Store
+
+# Nota: Mantenha o ficheiro 'dados_estados_dashboard.json' versionado
+# para que o dashboard.html funcione imediatamente ao ser clonado!
+!dados_estados_dashboard.json
