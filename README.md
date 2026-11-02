@@ -86,8 +86,8 @@ Fontes públicas ──► ETL (Python + Pandas) ──► Dados tratados ──
 1. Clone o repositório:
 
    ```bash
-   git clone https://github.com/SEU_USUARIO/NOME_DO_REPOSITORIO.git
-   cd NOME_DO_REPOSITORIO
+   git clone https://github.com/Gabriel33-fis/observasis-bi-territorial
+   cd observasis-bi-territorial
    ```
 
 2. Inicie um servidor HTTP local:
