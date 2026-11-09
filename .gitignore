@@ -1,3 +1,9 @@
+# Dependências e Build do Frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+
 # Ambiente virtual Python
 .venv/
 env/
@@ -5,16 +11,25 @@ venv/
 __pycache__/
 *.pyc
 
-# Ficheiros brutos e bases pesadas (gerados pelos scripts)
+# Bases de Dados CSV e Ficheiros Brutos (gerados pelos scripts ETL)
+*.csv
 fato_*.csv
-base_consolidada_municipios.csv
+dim_*.csv
+base_consolidada_*.csv
+outliers_gestao_*.csv
 dim_localidade.csv
+data/raw/
 
 # Ficheiros de sistema e IDEs
 .vscode/
 .idea/
 .DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Nota: Mantenha o ficheiro 'dados_estados_dashboard.json' versionado
-# para que o dashboard.html funcione imediatamente ao ser clonado!
-!dados_estados_dashboard.json
+# JSONs consumidos pela interface React (Garantir que sejam versionados)
+!public/dados_estados_dashboard.json
+!public/dados_municipios_dashboard.json
