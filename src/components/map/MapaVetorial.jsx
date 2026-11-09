@@ -96,10 +96,9 @@ export default function MapaVetorial({
       const icon = L.divIcon({
         className: '',
         html: `
-          <div class="custom-state-marker w-7 h-7 flex items-center justify-center rounded-full text-white font-bold text-[10px] cursor-pointer shadow-md transition-transform duration-150 ${
-            isSelected
-              ? 'ring-2 ring-white scale-110 !bg-blue-600'
-              : 'bg-slate-900/80 hover:bg-blue-600 hover:scale-110'
+          <div class="custom-state-marker w-7 h-7 flex items-center justify-center rounded-full text-white font-bold text-[10px] cursor-pointer shadow-md transition-transform duration-150 ${isSelected
+            ? 'ring-2 ring-white scale-110 !bg-blue-600'
+            : 'bg-slate-900/80 hover:bg-blue-600 hover:scale-110'
           }">
             ${d.uf}
           </div>
@@ -147,11 +146,10 @@ export default function MapaVetorial({
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-    // URL aberta e gratuita do Carto Voyager sem autenticação (corrige o "API KEY REQUIRED")
-    const tileLayer = L.tileLayer('https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      subdomains: 'abcd',
-      attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    // URL atualizada do OSM (sem necessidade de declarar subdomínios)
+    const tileLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
     const markersLayer = L.layerGroup().addTo(map);
@@ -299,10 +297,10 @@ export default function MapaVetorial({
           <label htmlFor="map-metric" className="text-xs font-medium text-slate-500 dark:text-slate-400">
             Métrica:
           </label>
-          <select 
-            id="map-metric" 
-            value={selectedMetric} 
-            onChange={(e) => onMetricChange(e.target.value)} 
+          <select
+            id="map-metric"
+            value={selectedMetric}
+            onChange={(e) => onMetricChange(e.target.value)}
             className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs py-1.5 px-3 rounded-xl border border-transparent focus:border-blue-500 focus:outline-none transition-colors"
           >
             {Object.entries(METRIC_CONFIG).map(([key, config]) => (
@@ -325,8 +323,8 @@ export default function MapaVetorial({
           <div className="space-y-1">
             {legendItems.map((item, idx) => (
               <div key={idx} className="flex items-center gap-2">
-                <span 
-                  className="w-3.5 h-3 rounded shadow-xs shrink-0" 
+                <span
+                  className="w-3.5 h-3 rounded shadow-xs shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
                 <span className="text-slate-600 dark:text-slate-400 font-mono text-[10px]">
@@ -338,7 +336,7 @@ export default function MapaVetorial({
         </div>
 
         {/* Botão Resetar Zoom */}
-        <button 
+        <button
           onClick={handleResetZoom}
           className="absolute top-4 right-4 z-20 bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium shadow-md transition flex items-center gap-1.5 cursor-pointer"
         >
