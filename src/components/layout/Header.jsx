@@ -20,7 +20,7 @@ export default function Header({ isDarkMode, onToggleDarkMode, onExportCsv }) {
         <div>
           <div className="flex items-center gap-2">
             <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
-              Observa<span className="text-blue-600 dark:text-blue-400">SIS</span>
+              Observa<span className="text-blue-600 dark:text-blue-400">NEXA</span>
             </span>
             <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
               Brasil Real
@@ -35,16 +35,28 @@ export default function Header({ isDarkMode, onToggleDarkMode, onExportCsv }) {
       {/* Quick Metrics & Global Controls */}
       <div className="flex items-center gap-2 sm:gap-3">
         <div className="hidden xl:flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400 mr-2 border-r border-slate-200 dark:border-slate-800 pr-4">
-          <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+          <span 
+            className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 flex items-center gap-1 cursor-help"
+            title="PIB/IBGE: Produto Interno Bruto / Instituto Brasileiro de Geografia e Estatística"
+          >
             <Coins className="w-3.5 h-3.5" /> PIB/IBGE
           </span>
-          <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400 flex items-center gap-1">
+          <span 
+            className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400 flex items-center gap-1 cursor-help"
+            title="SNIS: Sistema Nacional de Informações sobre Saneamento"
+          >
             <Droplet className="w-3.5 h-3.5" /> SNIS
           </span>
-          <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-rose-600 dark:text-rose-400 flex items-center gap-1">
+          <span 
+            className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-rose-600 dark:text-rose-400 flex items-center gap-1 cursor-help"
+            title="SINAN: Sistema de Informação de Agravos de Notificação"
+          >
             <AlertTriangle className="w-3.5 h-3.5" /> SINAN
           </span>
-          <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400 flex items-center gap-1">
+          <span 
+            className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400 flex items-center gap-1 cursor-help"
+            title="SIM: Sistema de Informações sobre Mortalidade"
+          >
             <HeartPulse className="w-3.5 h-3.5" /> SIM
           </span>
         </div>
@@ -69,4 +81,3 @@ export default function Header({ isDarkMode, onToggleDarkMode, onExportCsv }) {
     </header>
   );
 }
-
