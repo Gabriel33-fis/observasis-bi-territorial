@@ -9,6 +9,7 @@ import {
   ChevronLeft, 
   ChevronRight 
 } from 'lucide-react';
+import { fmtNum, fmtPct, fmtBRL } from '../../utils/format';
 
 export default function DataTable({
   selectedState = null,
@@ -137,7 +138,7 @@ export default function DataTable({
             {isDrillDown && (
               <button
                 onClick={onClearSelection}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-xl border border-blue-200 dark:border-blue-800 transition-all shadow-sm active:scale-95 cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-xl border border-blue-200 dark:border-blue-800 transition-all shadow-sm active:scale-95 cursor-pointer"
                 title="Voltar para a listagem das 27 Unidades Federativas"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -160,7 +161,7 @@ export default function DataTable({
             </h3>
           </div>
 
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-sm text-slate-400 mt-1">
             {isDrillDown
               ? `Exibindo indicadores dos ${currentMunicipios.length} municípios catalogados em ${selectedState.nome}`
               : 'Clique em um estado para detalhar seus municípios (visão Drill-down)'}
@@ -175,13 +176,13 @@ export default function DataTable({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={isDrillDown ? "Filtrar município..." : "Filtrar por UF ou Estado..."} 
-              className="pl-8 pr-3 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 rounded-xl border border-transparent focus:border-blue-500 focus:outline-none w-52 sm:w-60 text-slate-800 dark:text-slate-200 transition-colors"
+              className="pl-8 pr-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-800 rounded-xl border border-transparent focus:border-blue-500 focus:outline-none w-52 sm:w-60 text-slate-800 dark:text-slate-200 transition-colors"
             />
           </div>
 
           <button 
             onClick={handleExportCsv} 
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition cursor-pointer"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" />
             <span>Exportar CSV</span>
@@ -193,31 +194,31 @@ export default function DataTable({
       <div className="overflow-x-auto max-h-[480px]">
         {!isDrillDown ? (
           // ================= TABELA NACIONAL (27 UFs) =================
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-sm">
             <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-700 z-10">
               <tr>
-                <th onClick={() => handleSort('uf')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors">
+                <th onClick={() => handleSort('uf')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors">
                   UF <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('nome')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors">
+                <th onClick={() => handleSort('nome')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors">
                   Estado <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('regiao')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors">
+                <th onClick={() => handleSort('regiao')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors">
                   Região <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('coleta_esgoto_pct')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                <th onClick={() => handleSort('coleta_esgoto_pct')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-right">
                   Esgoto % (SNIS) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('atendimento_agua_pct')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                <th onClick={() => handleSort('atendimento_agua_pct')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-right">
                   Água % (SNIS) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('taxa_sinan_100k')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                <th onClick={() => handleSort('taxa_sinan_100k')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-right">
                   Notif. / 100k (SINAN) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('taxa_mortalidade_100k')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                <th onClick={() => handleSort('taxa_mortalidade_100k')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-right">
                   Mort. / 100k (SIM) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('pib_per_capita')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                <th onClick={() => handleSort('pib_per_capita')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-right">
                   PIB per Capita (R$) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
               </tr>
@@ -234,23 +235,23 @@ export default function DataTable({
                   </td>
                   <td className="py-3 px-4 text-slate-900 dark:text-white font-medium flex items-center justify-between">
                     <span>{d.nome}</span>
-                    <span className="text-[10px] text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
+                    <span className="text-xs text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity font-semibold">
                       Ver cidades ➔
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                    <span className="px-2 py-0.5 whitespace-nowrap rounded text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                       {d.regiao}
                     </span>
                   </td>
                   <td className={`py-3 px-4 text-right ${d.coleta_esgoto_pct < 40 ? 'text-rose-500 font-bold' : ''}`}>
-                    {d.coleta_esgoto_pct}%
+                    {fmtPct(d.coleta_esgoto_pct)}
                   </td>
-                  <td className="py-3 px-4 text-right">{d.atendimento_agua_pct}%</td>
-                  <td className="py-3 px-4 text-right">{d.taxa_sinan_100k}</td>
-                  <td className="py-3 px-4 text-right font-bold">{d.taxa_mortalidade_100k}</td>
-                  <td className="py-3 px-4 text-right font-mono">
-                    R$ {Number(d.pib_per_capita).toLocaleString('pt-BR')}
+                  <td className="py-3 px-4 text-right">{fmtPct(d.atendimento_agua_pct)}</td>
+                  <td className="py-3 px-4 text-right">{fmtNum(d.taxa_sinan_100k)}</td>
+                  <td className="py-3 px-4 text-right font-bold">{fmtNum(d.taxa_mortalidade_100k, 2)}</td>
+                  <td className="py-3 px-4 text-right tabular-nums">
+                    {fmtBRL(d.pib_per_capita)}
                   </td>
                 </tr>
               ))}
@@ -258,28 +259,28 @@ export default function DataTable({
           </table>
         ) : (
           // ================= TABELA MUNICIPAL (DRILL-DOWN) =================
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-sm">
             <thead className="sticky top-0 bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-200 dark:border-slate-700 z-10">
               <tr>
-                <th onClick={() => handleSort('nome_municipio')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors">
+                <th onClick={() => handleSort('nome_municipio')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors">
                   Município <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('esgoto_pct')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                <th onClick={() => handleSort('esgoto_pct')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-right">
                   Esgoto (%) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('agua_pct')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                <th onClick={() => handleSort('agua_pct')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-right">
                   Água (%) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('taxa_notificacoes_100k')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                <th onClick={() => handleSort('taxa_notificacoes_100k')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-right">
                   Notif. / 100k <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('taxa_obitos_100k')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                <th onClick={() => handleSort('taxa_obitos_100k')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-right">
                   Mort. / 100k <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('pib_per_capita')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                <th onClick={() => handleSort('pib_per_capita')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-right">
                   PIB per Capita (R$) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
-                <th onClick={() => handleSort('indice_vulnerabilidade')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-center">
+                <th onClick={() => handleSort('indice_vulnerabilidade')} className="py-3 px-4 whitespace-nowrap cursor-pointer hover:text-blue-500 transition-colors text-center">
                   Índice de Vulnerabilidade <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
               </tr>
@@ -309,24 +310,24 @@ export default function DataTable({
                       <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
                         {m.nome_municipio}
                       </td>
-                      <td className={`py-3 px-4 text-right ${m.esgoto_pct < 40 ? 'text-rose-500 font-bold' : ''}`}>
-                        {m.esgoto_pct != null ? `${Number(m.esgoto_pct).toFixed(1)}%` : '-'}
+                      <td className={`py-3 px-4 text-right ${!m.esgoto_sem_dado && m.esgoto_pct < 40 ? 'text-rose-500 font-bold' : ''}`}>
+                        {m.esgoto_sem_dado ? <span className="text-slate-400 font-normal italic">sem dado</span> : fmtPct(m.esgoto_pct)}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        {m.agua_pct != null ? `${Number(m.agua_pct).toFixed(1)}%` : '-'}
+                        {m.agua_sem_dado ? <span className="text-slate-400 font-normal italic">sem dado</span> : fmtPct(m.agua_pct)}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        {m.taxa_notificacoes_100k != null ? Number(m.taxa_notificacoes_100k).toFixed(1) : '-'}
+                        {fmtNum(m.taxa_notificacoes_100k)}
                       </td>
                       <td className="py-3 px-4 text-right font-bold">
-                        {m.taxa_obitos_100k != null ? Number(m.taxa_obitos_100k).toFixed(2) : '-'}
+                        {fmtNum(m.taxa_obitos_100k, 2)}
                       </td>
-                      <td className="py-3 px-4 text-right font-mono">
-                        R$ {Number(m.pib_per_capita || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+                      <td className="py-3 px-4 text-right tabular-nums">
+                        {fmtBRL(m.pib_per_capita)}
                       </td>
                       <td className="py-3 px-4 text-center">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] ${vulnBadge}`}>
-                          {vuln.toFixed(1)} pts
+                        <span className={`px-2.5 py-1 rounded-full text-xs ${vulnBadge}`}>
+                          {fmtNum(vuln)} pts
                         </span>
                       </td>
                     </tr>
@@ -339,7 +340,7 @@ export default function DataTable({
       </div>
 
       {/* Footer / Paginação */}
-      <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-3">
         <span>
           {isDrillDown
             ? `Exibindo ${paginatedData.length} de ${processedData.length} municípios em ${selectedState.nome} (${selectedState.uf})`

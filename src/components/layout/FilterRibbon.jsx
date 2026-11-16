@@ -12,7 +12,7 @@ const REGIONS = [
 export default function FilterRibbon({ selectedRegion, onRegionChange }) {
   return (
     <section className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-2.5 z-20 transition-colors duration-200">
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
         <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-1.5">
             <label htmlFor="filter-region" className="text-slate-400 font-medium">Região:</label>
@@ -38,7 +38,7 @@ export default function FilterRibbon({ selectedRegion, onRegionChange }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-slate-400 text-[11px]">
+        <div className="flex items-center gap-2 text-slate-400 text-xs">
           <span className="inline-flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             Dados integrados via BigQuery / Base dos Dados

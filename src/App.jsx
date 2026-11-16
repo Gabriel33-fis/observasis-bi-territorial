@@ -195,7 +195,7 @@ export default function App() {
         {loading ? (
           <div className="h-64 flex flex-col items-center justify-center gap-3">
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
               Carregando dados consolidados dos sistemas de informação (Estados e Municípios)...
             </p>
           </div>
@@ -239,6 +239,7 @@ export default function App() {
                 <RegionBarChart 
                   allData={allStates}
                   isDarkMode={isDarkMode}
+                  selectedMetric={selectedMetric}
                 />
               </div>
             </div>
@@ -260,7 +261,7 @@ export default function App() {
       {toastMessage && (
         <div className="fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl shadow-2xl transition-all transform animate-bounce">
           <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-          <span className="text-xs font-medium">{toastMessage}</span>
+          <span className="text-sm font-medium">{toastMessage}</span>
         </div>
       )}
     </div>

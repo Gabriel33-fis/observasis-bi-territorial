@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { RotateCcw, Map as MapIcon, MousePointerClick } from 'lucide-react';
-import { METRIC_CONFIG, getColorForValue } from '../../constants';
+import { METRIC_CONFIG, computeBreaks, getColorForValue, getLegendItems, formatMetric } from '../../constants';
 
 export default function MapaVetorial({
   data,
@@ -22,6 +22,14 @@ export default function MapaVetorial({
   const latestMetricRef = useRef(selectedMetric);
   const latestSelectedUfRef = useRef(selectedUf);
   const latestOnSelectUfRef = useRef(onSelectUf);
+
+  // Escala de cores da métrica atual: quintis calculados sobre os estados exibidos
+  const colorScale = useMemo(
+    () => computeBreaks((data || []).map((d) => d[selectedMetric])),
+    [data, selectedMetric]
+  );
+  const latestScaleRef = useRef(colorScale);
+  latestScaleRef.current = colorScale;
 
   latestDataRef.current = data;
   latestMetricRef.current = selectedMetric;
@@ -48,8 +56,7 @@ export default function MapaVetorial({
       };
     }
 
-    const val = stateData[metric] || 0;
-    const color = getColorForValue(val, metric);
+    const color = getColorForValue(stateData[metric], latestScaleRef.current);
     const isSelected = stateData.uf === currentSelectedUf;
 
     return {
@@ -57,7 +64,7 @@ export default function MapaVetorial({
       weight: isSelected ? 3 : 1.2,
       opacity: 1,
       color: isSelected ? '#38bdf8' : '#ffffff',
-      fillOpacity: isSelected ? 0.9 : 0.65
+      fillOpacity: isSelected ? 0.95 : 0.85
     };
   };
 
@@ -65,14 +72,12 @@ export default function MapaVetorial({
   const getTooltipContent = (stateData) => {
     const metric = latestMetricRef.current;
     const conf = METRIC_CONFIG[metric] || {};
-    const valFormatted = metric === 'pib_per_capita'
-      ? `R$ ${Number(stateData.pib_per_capita).toLocaleString('pt-BR')}`
-      : `${stateData[metric]}${conf.unit || ''}`;
+    const valFormatted = formatMetric(metric, stateData[metric]);
 
     return `
       <div class="leading-tight">
         <strong class="text-sm font-bold text-white">${stateData.nome} (${stateData.uf})</strong><br/>
-        <span class="text-slate-300 text-xs">${conf.label}:</span> 
+        <span class="text-slate-300 text-sm">${conf.label}:</span> 
         <strong class="text-sky-300 font-bold">${valFormatted}</strong>
       </div>
     `;
@@ -96,7 +101,7 @@ export default function MapaVetorial({
       const icon = L.divIcon({
         className: '',
         html: `
-          <div class="custom-state-marker w-7 h-7 flex items-center justify-center rounded-full text-white font-bold text-[10px] cursor-pointer shadow-md transition-transform duration-150 ${isSelected
+          <div class="custom-state-marker w-7 h-7 flex items-center justify-center rounded-full text-white font-bold text-xs cursor-pointer shadow-md transition-transform duration-150 ${isSelected
             ? 'ring-2 ring-white scale-110 !bg-blue-600'
             : 'bg-slate-900/80 hover:bg-blue-600 hover:scale-110'
           }">
@@ -109,14 +114,12 @@ export default function MapaVetorial({
 
       const marker = L.marker([d.lat, d.lng], { icon });
 
-      const tooltipVal = metric === 'pib_per_capita'
-        ? `R$ ${Number(d.pib_per_capita).toLocaleString('pt-BR')}`
-        : `${d[metric]}${conf.unit || ''}`;
+      const tooltipVal = formatMetric(metric, d[metric]);
 
       marker.bindTooltip(`
         <div class="leading-tight text-white">
           <strong class="text-sm">${d.nome} (${d.uf})</strong> - Região ${d.regiao}<br/>
-          <span class="text-slate-300 text-xs">${conf.label}:</span> <b>${tooltipVal}</b>
+          <span class="text-slate-300 text-sm">${conf.label}:</span> <b>${tooltipVal}</b>
         </div>
       `, { className: 'custom-leaflet-tooltip' });
 
@@ -262,19 +265,9 @@ export default function MapaVetorial({
     }
   };
 
-  // Cálculo da escala de cores da legenda
-  const conf = METRIC_CONFIG[selectedMetric] || { min: 0, max: 100, unit: '', label: '' };
-  const steps = 5;
-  const stepVal = (conf.max - conf.min) / steps;
-  const legendItems = Array.from({ length: steps }).map((_, i) => {
-    const val1 = conf.min + i * stepVal;
-    const val2 = conf.min + (i + 1) * stepVal;
-    const color = getColorForValue((val1 + val2) / 2, selectedMetric);
-    return {
-      color,
-      label: `${Math.round(val1)} a ${Math.round(val2)} ${conf.unit}`
-    };
-  });
+  // Legenda gerada a partir dos mesmos limites usados para colorir o mapa
+  const conf = METRIC_CONFIG[selectedMetric] || { unit: '', label: '' };
+  const legendItems = getLegendItems(colorScale, selectedMetric);
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-sm flex flex-col transition-colors duration-200">
@@ -288,20 +281,20 @@ export default function MapaVetorial({
               Distribuição Espacial Federativa
             </h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
             Clique em um estado para inspecionar os cruzamentos de dados
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <label htmlFor="map-metric" className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <label htmlFor="map-metric" className="text-sm font-medium text-slate-500 dark:text-slate-400">
             Métrica:
           </label>
           <select
             id="map-metric"
             value={selectedMetric}
             onChange={(e) => onMetricChange(e.target.value)}
-            className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs py-1.5 px-3 rounded-xl border border-transparent focus:border-blue-500 focus:outline-none transition-colors"
+            className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-sm py-1.5 px-3 rounded-xl border border-transparent focus:border-blue-500 focus:outline-none transition-colors"
           >
             {Object.entries(METRIC_CONFIG).map(([key, config]) => (
               <option key={key} value={key}>
@@ -316,8 +309,8 @@ export default function MapaVetorial({
         <div ref={mapContainerRef} className="w-full h-full z-10" />
 
         {/* Legenda Dinâmica do Mapa */}
-        <div className="absolute bottom-4 left-4 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg text-xs min-w-[200px]">
-          <h4 className="font-bold text-[11px] uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+        <div className="absolute bottom-4 left-4 z-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg text-sm min-w-[200px]">
+          <h4 className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
             {conf.label}
           </h4>
           <div className="space-y-1">
@@ -327,24 +320,25 @@ export default function MapaVetorial({
                   className="w-3.5 h-3 rounded shadow-xs shrink-0"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-slate-600 dark:text-slate-400 font-mono text-[10px]">
+                <span className="text-slate-600 dark:text-slate-400 text-xs tabular-nums">
                   {item.label}
                 </span>
               </div>
             ))}
           </div>
+          <p className="mt-2 text-xs text-slate-400">Mais escuro = valor maior. Faixas por quintis.</p>
         </div>
 
         {/* Botão Resetar Zoom */}
         <button
           onClick={handleResetZoom}
-          className="absolute top-4 right-4 z-20 bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-medium shadow-md transition flex items-center gap-1.5 cursor-pointer"
+          className="absolute top-4 right-4 z-20 bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-medium shadow-md transition flex items-center gap-1.5 cursor-pointer"
         >
           <RotateCcw className="w-3.5 h-3.5" /> Resetar Zoom
         </button>
       </div>
 
-      <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400">
+      <div className="mt-3 flex items-center justify-between text-xs text-slate-400">
         <span>* Dados tratados a partir de microdados públicos oficiais</span>
         <span className="flex items-center gap-1">
           <MousePointerClick className="w-3 h-3" /> Interativo via Leaflet
