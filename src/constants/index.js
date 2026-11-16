@@ -68,31 +68,6 @@ export const METRIC_CONFIG = {
     min: 15000,
     max: 90000,
     invertColor: false
-  },
-  mortalidade_infantil: {
-    label: 'IBGE: Mortalidade Infantil (por mil nascidos vivos)',
-    shortLabel: 'IBGE: Mortalidade Infantil',
-    unit: '‰',
-    min: 9,
-    max: 20,
-    invertColor: true
-  },
-  mortalidade_ate_5_anos: {
-    label: 'IBGE: Mortalidade até 5 Anos (por mil nascidos vivos)',
-    shortLabel: 'IBGE: Mortalidade até 5 Anos',
-    unit: '‰',
-    min: 10,
-    max: 26,
-    invertColor: true
-  },
-  // Só aparece no painel quando o JSON traz o campo (gerado após rodar extrair_sim_drsai_menores_5.py)
-  taxa_drsai_menores_5: {
-    label: 'SIM: Óbitos por DRSAI em Menores de 5 Anos (por 100 mil nascidos vivos)',
-    shortLabel: 'SIM: DRSAI em Menores de 5 Anos',
-    unit: '',
-    min: 0,
-    max: 60,
-    invertColor: true
   }
 };
 

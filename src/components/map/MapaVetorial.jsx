@@ -303,9 +303,7 @@ export default function MapaVetorial({
             onChange={(e) => onMetricChange(e.target.value)}
             className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold text-xs py-1.5 px-3 rounded-xl border border-transparent focus:border-blue-500 focus:outline-none transition-colors"
           >
-            {Object.entries(METRIC_CONFIG)
-              .filter(([key]) => (data || []).some((d) => d[key] != null))
-              .map(([key, config]) => (
+            {Object.entries(METRIC_CONFIG).map(([key, config]) => (
               <option key={key} value={key}>
                 {config.shortLabel || config.label}
               </option>
