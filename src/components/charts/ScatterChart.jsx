@@ -166,11 +166,6 @@ export default function ScatterChart({ data = [], onSelectUf, isDarkMode }) {
               >
                 <option value="taxa_mortalidade_100k">Mortalidade / 100k (SIM)</option>
                 <option value="taxa_sinan_100k">Notificações / 100k (SINAN)</option>
-                <option value="mortalidade_infantil">Mortalidade Infantil ‰ (IBGE)</option>
-                <option value="mortalidade_ate_5_anos">Mortalidade até 5 Anos ‰ (IBGE)</option>
-                {data.some((d) => d.taxa_drsai_menores_5 != null) && (
-                  <option value="taxa_drsai_menores_5">DRSAI em Menores de 5 / 100k nascidos (SIM)</option>
-                )}
               </select>
             </div>
           </div>

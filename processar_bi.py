@@ -8,14 +8,6 @@ df_snis = pd.read_csv("fato_snis.csv")
 df_sim = pd.read_csv("fato_sim.csv")
 df_sinan = pd.read_csv("fato_sinan.csv")
 
-# Opcional: óbitos por DRSAI em menores de 5 anos (gerado pelo extrair_sim_drsai_menores_5.py)
-import os
-TEM_MENORES_5 = os.path.exists("fato_sim_menores_5.csv")
-if TEM_MENORES_5:
-    df_sim_m5 = pd.read_csv("fato_sim_menores_5.csv")
-else:
-    print("Aviso: fato_sim_menores_5.csv não encontrado; o indicador de menores de 5 anos ficará de fora.")
-
 # Função robusta para limpar e padronizar o id_municipio para 6 dígitos
 def padronizar_ibge(df, col='id_municipio'):
     df = df.dropna(subset=[col]).copy()
@@ -32,8 +24,6 @@ df_pop = padronizar_ibge(df_pop)
 df_snis = padronizar_ibge(df_snis)
 df_sim = padronizar_ibge(df_sim)
 df_sinan = padronizar_ibge(df_sinan)
-if TEM_MENORES_5:
-    df_sim_m5 = padronizar_ibge(df_sim_m5)
 
 # 2.1 Criar a Tabela Dimensão: dLocalidade
 df_dlocalidade = df_pop[['id_municipio', 'populacao']].drop_duplicates(subset=['id_municipio']).copy()
@@ -70,13 +60,6 @@ df_master = df_dlocalidade.merge(df_pib[['id_municipio', 'pib', 'pib_per_capita'
 df_master = df_master.merge(df_snis[['id_municipio', 'agua_pct', 'esgoto_pct']], on='id_municipio', how='left')
 df_master = df_master.merge(df_sim[['id_municipio', 'total_obitos']], on='id_municipio', how='left')
 df_master = df_master.merge(df_sinan[['id_municipio', 'total_notificacoes']], on='id_municipio', how='left')
-if TEM_MENORES_5:
-    # Um município pode aparecer em mais de uma linha após a padronização da chave; soma antes de cruzar
-    df_sim_m5 = df_sim_m5.groupby('id_municipio', as_index=False)[['obitos_drsai_menores_5', 'obitos_drsai_menores_1']].sum()
-    df_master = df_master.merge(df_sim_m5, on='id_municipio', how='left')
-    # Aqui o zero é real: município sem registro no SIM não teve óbito por essa causa nessa faixa etária
-    df_master['obitos_drsai_menores_5'] = df_master['obitos_drsai_menores_5'].fillna(0).astype(int)
-    df_master['obitos_drsai_menores_1'] = df_master['obitos_drsai_menores_1'].fillna(0).astype(int)
 
 # Preenchimento de métricas ausentes
 df_master['total_obitos'] = df_master['total_obitos'].fillna(0)
@@ -155,24 +138,6 @@ df_uf = df_master.groupby(['uf', 'regiao'], as_index=False).apply(agregar_uf, in
 
 # Remover linhas residuais sem sigla de estado válida
 df_uf = df_uf[df_uf['uf'] != 'Outro']
-
-# Mortalidade infantil e mortalidade até 5 anos por UF (IBGE, Projeções da População - Revisão 2024), ano-base 2021.
-# O arquivo de referência é gerado pelo extrair_mortalidade_infantil.py a partir da planilha oficial.
-# O IBGE não calcula esses indicadores por município, por isso eles entram apenas na base estadual.
-import json
-with open("ref_mortalidade_infantil_uf.json", encoding="utf-8") as f:
-    ref_infantil = json.load(f)['valores']
-df_uf['mortalidade_infantil'] = df_uf['uf'].map(lambda uf: ref_infantil.get(uf, {}).get('mortalidade_infantil'))
-df_uf['mortalidade_ate_5_anos'] = df_uf['uf'].map(lambda uf: ref_infantil.get(uf, {}).get('mortalidade_ate_5_anos'))
-
-# Óbitos por DRSAI em menores de 5 anos: total por UF e taxa por 100 mil nascidos vivos.
-# O denominador (nascidos vivos em 2021) vem da mesma planilha do IBGE.
-if TEM_MENORES_5:
-    obitos_m5_uf = df_master.groupby('uf')[['obitos_drsai_menores_5', 'obitos_drsai_menores_1']].sum()
-    df_uf['obitos_drsai_menores_5'] = df_uf['uf'].map(obitos_m5_uf['obitos_drsai_menores_5']).fillna(0).astype(int)
-    df_uf['obitos_drsai_menores_1'] = df_uf['uf'].map(obitos_m5_uf['obitos_drsai_menores_1']).fillna(0).astype(int)
-    nascidos = df_uf['uf'].map(lambda uf: ref_infantil.get(uf, {}).get('nascidos_vivos'))
-    df_uf['taxa_drsai_menores_5'] = (df_uf['obitos_drsai_menores_5'] / nascidos * 100000).round(2)
 
 # Exportar JSON formatado consumido pelo React
 df_uf.to_json("dados_estados_dashboard.json", orient="records", indent=2, force_ascii=False)

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Droplet, Activity, AlertCircle, Coins, Baby } from 'lucide-react';
+import { Droplet, Activity, AlertCircle, Coins } from 'lucide-react';
 
 export default function Spotlight({ selectedState, allStates = [] }) {
   // Cálculo do ranking nacional de saneamento
@@ -8,14 +8,6 @@ export default function Spotlight({ selectedState, allStates = [] }) {
     const sorted = [...allStates].sort((a, b) => (b.coleta_esgoto_pct || 0) - (a.coleta_esgoto_pct || 0));
     const index = sorted.findIndex((s) => s.uf === selectedState.uf);
     return index !== -1 ? `${index + 1}º do Brasil` : '-';
-  }, [selectedState, allStates]);
-
-  // Posição do estado no ranking nacional de mortalidade infantil (1º = menor taxa)
-  const rankInfantil = useMemo(() => {
-    if (!selectedState || selectedState.mortalidade_infantil == null) return null;
-    const comDado = allStates.filter((s) => s.mortalidade_infantil != null);
-    const pos = comDado.filter((s) => s.mortalidade_infantil < selectedState.mortalidade_infantil).length + 1;
-    return { pos, total: comDado.length };
   }, [selectedState, allStates]);
 
   // Consumo do Índice Sintético de Vulnerabilidade (Calculado no Backend Python)
@@ -150,61 +142,6 @@ export default function Spotlight({ selectedState, allStates = [] }) {
               </strong>
             </div>
           </div>
-
-          {/* Card Mortalidade Infantil */}
-          {selectedState.mortalidade_infantil != null && (
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
-                  <Baby className="w-3.5 h-3.5" /> Mortalidade Infantil (IBGE)
-                </span>
-                {rankInfantil && (
-                  <span className="text-[10px] font-semibold text-slate-400">
-                    {rankInfantil.pos}ª menor de {rankInfantil.total}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-baseline justify-between">
-                <div>
-                  <span className="text-lg font-black text-slate-900 dark:text-white">
-                    {Number(selectedState.mortalidade_infantil).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-                  </span>
-                  <span className="text-[11px] text-slate-400 ml-1">por mil nascidos vivos</span>
-                </div>
-                {selectedState.mortalidade_ate_5_anos != null && (
-                  <div className="text-right text-[11px] text-slate-400">
-                    Até 5 anos: <strong className="text-slate-700 dark:text-slate-200">
-                      {Number(selectedState.mortalidade_ate_5_anos).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-                    </strong>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Card DRSAI em Menores de 5 Anos (só quando o dado existe) */}
-          {selectedState.taxa_drsai_menores_5 != null && (
-            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5" /> DRSAI em Menores de 5 Anos (SIM)
-                </span>
-              </div>
-              <div className="flex items-baseline justify-between">
-                <div>
-                  <span className="text-lg font-black text-slate-900 dark:text-white">
-                    {Number(selectedState.taxa_drsai_menores_5).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-                  </span>
-                  <span className="text-[11px] text-slate-400 ml-1">por 100 mil nascidos vivos</span>
-                </div>
-                <div className="text-right text-[11px] text-slate-400">
-                  Óbitos: <strong className="text-slate-700 dark:text-slate-200">
-                    {Number(selectedState.obitos_drsai_menores_5 || 0).toLocaleString('pt-BR')}
-                  </strong>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Card PIB per Capita */}
           <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
