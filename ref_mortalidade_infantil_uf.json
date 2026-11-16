@@ -1,120 +1,148 @@
 {
   "ano": 2021,
-  "unidade": "por mil nascidos vivos, ambos os sexos",
+  "unidade": "taxas por mil nascidos vivos, ambos os sexos; nascidos_vivos em número absoluto",
   "fonte": "IBGE, Projeções da População: Brasil e Unidades da Federação - Revisão 2024 (Indicadores Implícitos)",
   "arquivo": "dados_ibge/projecoes_2024_tab4_indicadores.xlsx",
   "brasil": {
     "mortalidade_infantil": 12.17,
-    "mortalidade_ate_5_anos": 13.93
+    "mortalidade_ate_5_anos": 13.93,
+    "nascidos_vivos": 2690146
   },
   "valores": {
     "AC": {
       "mortalidade_infantil": 19.44,
-      "mortalidade_ate_5_anos": 22.61
+      "mortalidade_ate_5_anos": 22.61,
+      "nascidos_vivos": 15865
     },
     "AL": {
       "mortalidade_infantil": 13.7,
-      "mortalidade_ate_5_anos": 15.8
+      "mortalidade_ate_5_anos": 15.8,
+      "nascidos_vivos": 49040
     },
     "AM": {
       "mortalidade_infantil": 15.7,
-      "mortalidade_ate_5_anos": 18.98
+      "mortalidade_ate_5_anos": 18.98,
+      "nascidos_vivos": 79217
     },
     "AP": {
       "mortalidade_infantil": 19.35,
-      "mortalidade_ate_5_anos": 22.56
+      "mortalidade_ate_5_anos": 22.56,
+      "nascidos_vivos": 15504
     },
     "BA": {
       "mortalidade_infantil": 15.22,
-      "mortalidade_ate_5_anos": 16.87
+      "mortalidade_ate_5_anos": 16.87,
+      "nascidos_vivos": 186701
     },
     "CE": {
       "mortalidade_infantil": 11.54,
-      "mortalidade_ate_5_anos": 13.23
+      "mortalidade_ate_5_anos": 13.23,
+      "nascidos_vivos": 121409
     },
     "DF": {
       "mortalidade_infantil": 10.43,
-      "mortalidade_ate_5_anos": 11.71
+      "mortalidade_ate_5_anos": 11.71,
+      "nascidos_vivos": 38030
     },
     "ES": {
       "mortalidade_infantil": 11.51,
-      "mortalidade_ate_5_anos": 13.44
+      "mortalidade_ate_5_anos": 13.44,
+      "nascidos_vivos": 52716
     },
     "GO": {
       "mortalidade_infantil": 12.43,
-      "mortalidade_ate_5_anos": 14.42
+      "mortalidade_ate_5_anos": 14.42,
+      "nascidos_vivos": 91398
     },
     "MA": {
       "mortalidade_infantil": 14.74,
-      "mortalidade_ate_5_anos": 17.17
+      "mortalidade_ate_5_anos": 17.17,
+      "nascidos_vivos": 110554
     },
     "MG": {
       "mortalidade_infantil": 10.93,
-      "mortalidade_ate_5_anos": 12.36
+      "mortalidade_ate_5_anos": 12.36,
+      "nascidos_vivos": 243371
     },
     "MS": {
       "mortalidade_infantil": 11.17,
-      "mortalidade_ate_5_anos": 13.02
+      "mortalidade_ate_5_anos": 13.02,
+      "nascidos_vivos": 42264
     },
     "MT": {
       "mortalidade_infantil": 13.19,
-      "mortalidade_ate_5_anos": 15.9
+      "mortalidade_ate_5_anos": 15.9,
+      "nascidos_vivos": 58428
     },
     "PA": {
       "mortalidade_infantil": 15.31,
-      "mortalidade_ate_5_anos": 17.63
+      "mortalidade_ate_5_anos": 17.63,
+      "nascidos_vivos": 137873
     },
     "PB": {
       "mortalidade_infantil": 13.16,
-      "mortalidade_ate_5_anos": 15.0
+      "mortalidade_ate_5_anos": 15.0,
+      "nascidos_vivos": 55860
     },
     "PE": {
       "mortalidade_infantil": 12.77,
-      "mortalidade_ate_5_anos": 14.45
+      "mortalidade_ate_5_anos": 14.45,
+      "nascidos_vivos": 127607
     },
     "PI": {
       "mortalidade_infantil": 14.72,
-      "mortalidade_ate_5_anos": 16.53
+      "mortalidade_ate_5_anos": 16.53,
+      "nascidos_vivos": 45957
     },
     "PR": {
       "mortalidade_infantil": 9.67,
-      "mortalidade_ate_5_anos": 11.04
+      "mortalidade_ate_5_anos": 11.04,
+      "nascidos_vivos": 142547
     },
     "RJ": {
       "mortalidade_infantil": 12.5,
-      "mortalidade_ate_5_anos": 14.15
+      "mortalidade_ate_5_anos": 14.15,
+      "nascidos_vivos": 190326
     },
     "RN": {
       "mortalidade_infantil": 12.69,
-      "mortalidade_ate_5_anos": 13.86
+      "mortalidade_ate_5_anos": 13.86,
+      "nascidos_vivos": 43696
     },
     "RO": {
       "mortalidade_infantil": 13.21,
-      "mortalidade_ate_5_anos": 15.25
+      "mortalidade_ate_5_anos": 15.25,
+      "nascidos_vivos": 25576
     },
     "RR": {
       "mortalidade_infantil": 19.95,
-      "mortalidade_ate_5_anos": 26.09
+      "mortalidade_ate_5_anos": 26.09,
+      "nascidos_vivos": 14077
     },
     "RS": {
       "mortalidade_infantil": 9.5,
-      "mortalidade_ate_5_anos": 11.2
+      "mortalidade_ate_5_anos": 11.2,
+      "nascidos_vivos": 124509
     },
     "SC": {
       "mortalidade_infantil": 9.31,
-      "mortalidade_ate_5_anos": 10.56
+      "mortalidade_ate_5_anos": 10.56,
+      "nascidos_vivos": 96670
     },
     "SE": {
       "mortalidade_infantil": 14.75,
-      "mortalidade_ate_5_anos": 16.97
+      "mortalidade_ate_5_anos": 16.97,
+      "nascidos_vivos": 31215
     },
     "SP": {
       "mortalidade_infantil": 10.35,
-      "mortalidade_ate_5_anos": 11.75
+      "mortalidade_ate_5_anos": 11.75,
+      "nascidos_vivos": 525789
     },
     "TO": {
       "mortalidade_infantil": 12.65,
-      "mortalidade_ate_5_anos": 15.22
+      "mortalidade_ate_5_anos": 15.22,
+      "nascidos_vivos": 23947
     }
   }
 }
