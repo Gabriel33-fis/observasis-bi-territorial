@@ -104,9 +104,9 @@ export default function DataTable({
   // Exportação CSV de acordo com o contexto (Nacional ou Municipal)
   const handleExportCsv = () => {
     if (!isDrillDown) {
-      let csv = 'UF,Estado,Regiao,Populacao,PIB_per_Capita,Esgoto_SNIS_pct,Agua_SNIS_pct,SINAN_Taxa_100k,SIM_Taxa_Mortalidade_100k,Total_Obitos,Total_Notificacoes\n';
+      let csv = 'UF,Estado,Regiao,Populacao,PIB_per_Capita,Esgoto_SNIS_pct,Agua_SNIS_pct,SINAN_Taxa_100k,SIM_Taxa_Mortalidade_100k,Total_Obitos,Total_Notificacoes,Expectativa_Vida_Anos\n';
       processedData.forEach((d) => {
-        csv += `${d.uf},"${d.nome}",${d.regiao},${d.populacao},${d.pib_per_capita},${d.coleta_esgoto_pct},${d.atendimento_agua_pct},${d.taxa_sinan_100k},${d.taxa_mortalidade_100k},${d.total_obitos},${d.total_notificacoes}\n`;
+        csv += `${d.uf},"${d.nome}",${d.regiao},${d.populacao},${d.pib_per_capita},${d.coleta_esgoto_pct},${d.atendimento_agua_pct},${d.taxa_sinan_100k},${d.taxa_mortalidade_100k},${d.total_obitos},${d.total_notificacoes},${d.expectativa_vida ?? ''}\n`;
       });
       downloadCsv(csv, `observasis_estados_${new Date().toISOString().slice(0, 10)}.csv`);
     } else {
@@ -217,6 +217,9 @@ export default function DataTable({
                 <th onClick={() => handleSort('taxa_mortalidade_100k')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
                   Mort. / 100k (SIM) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
+                <th onClick={() => handleSort('expectativa_vida')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                  Exp. de Vida (IBGE) <ArrowUpDown className="w-3 h-3 inline ml-1" />
+                </th>
                 <th onClick={() => handleSort('pib_per_capita')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
                   PIB per Capita (R$) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
@@ -249,6 +252,9 @@ export default function DataTable({
                   <td className="py-3 px-4 text-right">{d.atendimento_agua_pct}%</td>
                   <td className="py-3 px-4 text-right">{d.taxa_sinan_100k}</td>
                   <td className="py-3 px-4 text-right font-bold">{d.taxa_mortalidade_100k}</td>
+                  <td className="py-3 px-4 text-right">
+                    {d.expectativa_vida != null ? `${Number(d.expectativa_vida).toLocaleString('pt-BR', { minimumFractionDigits: 1 })} anos` : '—'}
+                  </td>
                   <td className="py-3 px-4 text-right font-mono">
                     R$ {Number(d.pib_per_capita).toLocaleString('pt-BR')}
                   </td>
