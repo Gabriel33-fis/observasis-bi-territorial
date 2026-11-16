@@ -26,6 +26,12 @@ export default function DataTable({
 
   const isDrillDown = Boolean(selectedState);
 
+  // A coluna de óbitos em menores de 5 anos só aparece quando o JSON municipal traz o campo
+  const temMenores5 = useMemo(
+    () => municipiosData.some((m) => m.obitos_drsai_menores_5 != null),
+    [municipiosData]
+  );
+
   // 1. DADOS DE MUNICÍPIOS FILTRADOS PELA UF SELECIONADA
   const currentMunicipios = useMemo(() => {
     if (!isDrillDown || !municipiosData.length) return [];
@@ -104,15 +110,15 @@ export default function DataTable({
   // Exportação CSV de acordo com o contexto (Nacional ou Municipal)
   const handleExportCsv = () => {
     if (!isDrillDown) {
-      let csv = 'UF,Estado,Regiao,Populacao,PIB_per_Capita,Esgoto_SNIS_pct,Agua_SNIS_pct,SINAN_Taxa_100k,SIM_Taxa_Mortalidade_100k,Total_Obitos,Total_Notificacoes,Mortalidade_Infantil_por_mil,Mortalidade_ate_5_anos_por_mil\n';
+      let csv = 'UF,Estado,Regiao,Populacao,PIB_per_Capita,Esgoto_SNIS_pct,Agua_SNIS_pct,SINAN_Taxa_100k,SIM_Taxa_Mortalidade_100k,Total_Obitos,Total_Notificacoes,Mortalidade_Infantil_por_mil,Mortalidade_ate_5_anos_por_mil,Obitos_DRSAI_Menores_5,Taxa_DRSAI_Menores_5_por_100k_nascidos\n';
       processedData.forEach((d) => {
-        csv += `${d.uf},"${d.nome}",${d.regiao},${d.populacao},${d.pib_per_capita},${d.coleta_esgoto_pct},${d.atendimento_agua_pct},${d.taxa_sinan_100k},${d.taxa_mortalidade_100k},${d.total_obitos},${d.total_notificacoes},${d.mortalidade_infantil ?? ''},${d.mortalidade_ate_5_anos ?? ''}\n`;
+        csv += `${d.uf},"${d.nome}",${d.regiao},${d.populacao},${d.pib_per_capita},${d.coleta_esgoto_pct},${d.atendimento_agua_pct},${d.taxa_sinan_100k},${d.taxa_mortalidade_100k},${d.total_obitos},${d.total_notificacoes},${d.mortalidade_infantil ?? ''},${d.mortalidade_ate_5_anos ?? ''},${d.obitos_drsai_menores_5 ?? ''},${d.taxa_drsai_menores_5 ?? ''}\n`;
       });
       downloadCsv(csv, `observasis_estados_${new Date().toISOString().slice(0, 10)}.csv`);
     } else {
-      let csv = 'ID_Municipio,Municipio,UF,Regiao,Populacao,PIB_per_Capita,Esgoto_pct,Agua_pct,Taxa_Notificacoes_100k,Taxa_Obitos_100k,Indice_Vulnerabilidade\n';
+      let csv = 'ID_Municipio,Municipio,UF,Regiao,Populacao,PIB_per_Capita,Esgoto_pct,Agua_pct,Taxa_Notificacoes_100k,Taxa_Obitos_100k,Indice_Vulnerabilidade,Obitos_DRSAI_Menores_5\n';
       processedData.forEach((m) => {
-        csv += `${m.id_municipio},"${m.nome_municipio}",${m.uf},${m.regiao},${m.populacao},${m.pib_per_capita},${m.esgoto_pct},${m.agua_pct},${m.taxa_notificacoes_100k},${m.taxa_obitos_100k},${m.indice_vulnerabilidade}\n`;
+        csv += `${m.id_municipio},"${m.nome_municipio}",${m.uf},${m.regiao},${m.populacao},${m.pib_per_capita},${m.esgoto_pct},${m.agua_pct},${m.taxa_notificacoes_100k},${m.taxa_obitos_100k},${m.indice_vulnerabilidade},${m.obitos_drsai_menores_5 ?? ''}\n`;
       });
       downloadCsv(csv, `observasis_municipios_${selectedState.uf}_${new Date().toISOString().slice(0, 10)}.csv`);
     }
@@ -282,6 +288,11 @@ export default function DataTable({
                 <th onClick={() => handleSort('taxa_obitos_100k')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
                   Mort. / 100k <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
+                {temMenores5 && (
+                  <th onClick={() => handleSort('obitos_drsai_menores_5')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
+                    Óbitos &lt; 5 anos <ArrowUpDown className="w-3 h-3 inline ml-1" />
+                  </th>
+                )}
                 <th onClick={() => handleSort('pib_per_capita')} className="py-3 px-4 cursor-pointer hover:text-blue-500 transition-colors text-right">
                   PIB per Capita (R$) <ArrowUpDown className="w-3 h-3 inline ml-1" />
                 </th>
@@ -293,7 +304,7 @@ export default function DataTable({
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium text-slate-700 dark:text-slate-300">
               {paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="py-8 text-center text-slate-400">
+                  <td colSpan={temMenores5 ? 8 : 7} className="py-8 text-center text-slate-400">
                     Nenhum município encontrado para a busca especificada.
                   </td>
                 </tr>
@@ -327,6 +338,11 @@ export default function DataTable({
                       <td className="py-3 px-4 text-right font-bold">
                         {m.taxa_obitos_100k != null ? Number(m.taxa_obitos_100k).toFixed(2) : '-'}
                       </td>
+                      {temMenores5 && (
+                        <td className={`py-3 px-4 text-right ${m.obitos_drsai_menores_5 > 0 ? 'text-rose-500 font-bold' : ''}`}>
+                          {m.obitos_drsai_menores_5 ?? '-'}
+                        </td>
+                      )}
                       <td className="py-3 px-4 text-right font-mono">
                         R$ {Number(m.pib_per_capita || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
                       </td>

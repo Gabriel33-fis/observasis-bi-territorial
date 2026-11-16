@@ -182,6 +182,30 @@ export default function Spotlight({ selectedState, allStates = [] }) {
             </div>
           )}
 
+          {/* Card DRSAI em Menores de 5 Anos (só quando o dado existe) */}
+          {selectedState.taxa_drsai_menores_5 != null && (
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5" /> DRSAI em Menores de 5 Anos (SIM)
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <div>
+                  <span className="text-lg font-black text-slate-900 dark:text-white">
+                    {Number(selectedState.taxa_drsai_menores_5).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+                  </span>
+                  <span className="text-[11px] text-slate-400 ml-1">por 100 mil nascidos vivos</span>
+                </div>
+                <div className="text-right text-[11px] text-slate-400">
+                  Óbitos: <strong className="text-slate-700 dark:text-slate-200">
+                    {Number(selectedState.obitos_drsai_menores_5 || 0).toLocaleString('pt-BR')}
+                  </strong>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Card PIB per Capita */}
           <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">

@@ -176,6 +176,7 @@ observasis-bi-territorial/
 ├── processar_bi.py                        # Script do pipeline de ETL e modelagem
 ├── extrair_dados.py                       # Consultas à Base dos Dados / BigQuery
 ├── extrair_sim_drsai.py                   # Extração de mortalidade CID A00-A09
+├── extrair_sim_drsai_menores_5.py         # Óbitos por DRSAI em menores de 5 anos (SIM, BigQuery)
 ├── extrair_mortalidade_infantil.py        # Mortalidade infantil e até 5 anos por UF (planilha do IBGE)
 ├── dados_ibge/                            # Planilha oficial do IBGE (Projeções da População, Revisão 2024)
 ├── ref_mortalidade_infantil_uf.json       # Referência gerada: mortalidade infantil e até 5 anos por UF (2021)

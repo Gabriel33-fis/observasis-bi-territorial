@@ -8,6 +8,9 @@ Indicadores (ambos os sexos, por mil nascidos vivos):
 - TMI_T: taxa de mortalidade infantil (óbitos de menores de 1 ano)
 - 5q0_T: probabilidade de morte até os 5 anos de idade
 
+Também guarda NASC_T (nascimentos totais no ano), usado pelo processar_bi.py como
+denominador da taxa de óbitos por DRSAI em menores de 5 anos.
+
 Requer: pip install pandas openpyxl
 """
 import json
@@ -16,7 +19,7 @@ import pandas as pd
 ANO = 2021
 PLANILHA = "dados_ibge/projecoes_2024_tab4_indicadores.xlsx"
 SAIDA = "ref_mortalidade_infantil_uf.json"
-COLUNAS = {"TMI_T": "mortalidade_infantil", "5q0_T": "mortalidade_ate_5_anos"}
+COLUNAS = {"TMI_T": "mortalidade_infantil", "5q0_T": "mortalidade_ate_5_anos", "NASC_T": "nascidos_vivos"}
 
 print(f"--- Extraindo mortalidade infantil (TMI_T) e até 5 anos (5q0_T) - IBGE {ANO} ---")
 
@@ -34,14 +37,20 @@ if len(df_uf) != 27:
 
 linha_br = df_ano[df_ano["CÓD."] == 0].iloc[0]
 
+
+def formatar(nome, valor):
+    """Nascidos vivos é contagem (inteiro); as taxas ficam com duas casas decimais."""
+    return int(round(float(valor))) if nome == "nascidos_vivos" else round(float(valor), 2)
+
+
 referencia = {
     "ano": ANO,
-    "unidade": "por mil nascidos vivos, ambos os sexos",
+    "unidade": "taxas por mil nascidos vivos, ambos os sexos; nascidos_vivos em número absoluto",
     "fonte": "IBGE, Projeções da População: Brasil e Unidades da Federação - Revisão 2024 (Indicadores Implícitos)",
     "arquivo": PLANILHA,
-    "brasil": {nome: round(float(linha_br[col]), 2) for col, nome in COLUNAS.items()},
+    "brasil": {nome: formatar(nome, linha_br[col]) for col, nome in COLUNAS.items()},
     "valores": {
-        linha["SIGLA"]: {nome: round(float(linha[col]), 2) for col, nome in COLUNAS.items()}
+        linha["SIGLA"]: {nome: formatar(nome, linha[col]) for col, nome in COLUNAS.items()}
         for _, linha in df_uf.iterrows()
     },
 }
