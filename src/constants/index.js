@@ -1,3 +1,5 @@
+import { fmtNum, fmtPct, fmtBRL } from '../utils/format';
+
 export const UF_METADATA = {
   'AC': { nome: 'Acre', lat: -9.0238, lng: -70.812 },
   'AL': { nome: 'Alagoas', lat: -9.5713, lng: -36.782 },
@@ -33,41 +35,30 @@ export const METRIC_CONFIG = {
     label: 'SNIS: Esgoto Coletado (%)',
     shortLabel: 'SNIS: % Coleta Esgoto',
     unit: '%',
-    min: 0,
-    max: 100,
-    invertColor: false
+    decimals: 1
   },
   atendimento_agua_pct: {
     label: 'SNIS: Água Tratada (%)',
     shortLabel: 'SNIS: % Atendimento Água',
     unit: '%',
-    min: 30,
-    max: 100,
-    invertColor: false
+    decimals: 1
   },
   taxa_sinan_100k: {
     label: 'SINAN: Taxa / 100k hab',
     shortLabel: 'SINAN: Notificações / 100k hab',
     unit: '',
-    min: 10,
-    max: 2000,
-    invertColor: true
+    decimals: 1
   },
   taxa_mortalidade_100k: {
     label: 'SIM: Óbitos Hídricos / 100k hab (CID A00-A09)',
     shortLabel: 'SIM: Mortalidade / 100k hab',
     unit: '',
-    min: 0,
-    max: 12,
-    invertColor: true
+    decimals: 2
   },
   pib_per_capita: {
     label: 'PIB per Capita (R$)',
     shortLabel: 'PIB per Capita (R$)',
-    unit: 'R$',
-    min: 15000,
-    max: 90000,
-    invertColor: false
+    unit: 'R$'
   }
 };
 
@@ -79,17 +70,58 @@ export const REGION_COLORS = {
   'Sul': '#ec4899',
 };
 
-export function getColorForValue(val, metricKey) {
-  const conf = METRIC_CONFIG[metricKey];
-  if (!conf) return '#94a3b8';
-  const norm = Math.max(0, Math.min(1, (val - conf.min) / (conf.max - conf.min)));
-  const effective = conf.invertColor ? (1 - norm) : norm;
+// Paleta sequencial de um único matiz, do claro (menor valor) ao escuro (maior valor)
+export const SEQUENTIAL_RAMP = ['#b7d3f6', '#6da7ec', '#2a78d6', '#1c5cab', '#0d366b'];
+export const NO_DATA_COLOR = '#cbd5e1';
 
-  if (effective < 0.25) return '#ef4444';
-  if (effective < 0.50) return '#f97316';
-  if (effective < 0.70) return '#eab308';
-  if (effective < 0.85) return '#06b6d4';
-  return '#10b981';
+// Limites entre as classes, calculados por quantis dos valores exibidos (quintis por padrão).
+// Assim cada faixa reúne aproximadamente o mesmo número de estados, qualquer que seja a métrica.
+export function computeBreaks(values, classes = SEQUENTIAL_RAMP.length) {
+  const sorted = (values || [])
+    .filter((v) => v !== null && v !== undefined && Number.isFinite(Number(v)))
+    .map(Number)
+    .sort((a, b) => a - b);
+  if (sorted.length === 0) return { min: 0, max: 0, breaks: [] };
+
+  const breaks = [];
+  for (let i = 1; i < classes; i++) {
+    const pos = (sorted.length - 1) * (i / classes);
+    const lo = Math.floor(pos);
+    const hi = Math.ceil(pos);
+    breaks.push(sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo));
+  }
+  return { min: sorted[0], max: sorted[sorted.length - 1], breaks };
+}
+
+// Índice da classe (0 = mais clara) em que o valor cai
+export function getClassIndex(val, scale) {
+  let i = 0;
+  while (i < scale.breaks.length && Number(val) > scale.breaks[i]) i++;
+  return i;
+}
+
+// Cor do valor na escala; valores ausentes recebem cinza neutro
+export function getColorForValue(val, scale) {
+  if (val === null || val === undefined || !Number.isFinite(Number(val)) || !scale) return NO_DATA_COLOR;
+  return SEQUENTIAL_RAMP[getClassIndex(val, scale)];
+}
+
+// Faixas da legenda, geradas a partir dos mesmos limites usados para colorir o mapa
+export function getLegendItems(scale, metricKey) {
+  if (!scale || scale.breaks.length === 0) return [];
+  const limites = [scale.min, ...scale.breaks, scale.max];
+  return SEQUENTIAL_RAMP.map((color, i) => ({
+    color,
+    label: `${formatMetric(metricKey, limites[i])} a ${formatMetric(metricKey, limites[i + 1])}`
+  }));
+}
+
+// Formata o valor de uma métrica no padrão brasileiro, com a unidade e as casas decimais dela
+export function formatMetric(metricKey, val) {
+  const conf = METRIC_CONFIG[metricKey] || {};
+  if (conf.unit === '%') return fmtPct(val, conf.decimals ?? 1);
+  if (conf.unit === 'R$') return fmtBRL(val);
+  return fmtNum(val, conf.decimals ?? 1);
 }
 
 export function calculatePearson(xArr, yArr) {

@@ -51,13 +51,22 @@ df_pib = df_pib.merge(df_dlocalidade[['id_municipio', 'populacao']], on='id_muni
 df_pib['pib_per_capita'] = np.where(df_pib['populacao'] > 0, df_pib['pib'] / df_pib['populacao'], np.nan)
 df_pib[['id_municipio', 'ano', 'pib', 'pib_per_capita']].to_csv("fato_pib_limpa.csv", index=False)
 
-df_snis['agua_pct'] = pd.to_numeric(df_snis['agua_pct'], errors='coerce').fillna(0).clip(0, 100)
-df_snis['esgoto_pct'] = pd.to_numeric(df_snis['esgoto_pct'], errors='coerce').fillna(0).clip(0, 100)
+# Antes de preencher com zero, registra onde o SNIS não informou o indicador.
+# O zero continua nos cálculos (o índice não muda), mas o painel passa a exibir "sem dado".
+df_snis['agua_pct'] = pd.to_numeric(df_snis['agua_pct'], errors='coerce')
+df_snis['esgoto_pct'] = pd.to_numeric(df_snis['esgoto_pct'], errors='coerce')
+df_snis['agua_sem_dado'] = df_snis['agua_pct'].isna()
+df_snis['esgoto_sem_dado'] = df_snis['esgoto_pct'].isna()
+df_snis['agua_pct'] = df_snis['agua_pct'].fillna(0).clip(0, 100)
+df_snis['esgoto_pct'] = df_snis['esgoto_pct'].fillna(0).clip(0, 100)
 df_snis[['id_municipio', 'ano', 'agua_pct', 'esgoto_pct']].to_csv("fato_snis_limpa.csv", index=False)
 
 print("--- 3. Cruzamento relacional (Star Schema -> Base Consolidada) ---")
 df_master = df_dlocalidade.merge(df_pib[['id_municipio', 'pib', 'pib_per_capita']], on='id_municipio', how='left')
-df_master = df_master.merge(df_snis[['id_municipio', 'agua_pct', 'esgoto_pct']], on='id_municipio', how='left')
+df_master = df_master.merge(df_snis[['id_municipio', 'agua_pct', 'esgoto_pct', 'agua_sem_dado', 'esgoto_sem_dado']], on='id_municipio', how='left')
+# Município que nem aparece no SNIS também é dado ausente
+for col in ['agua_sem_dado', 'esgoto_sem_dado']:
+    df_master[col] = df_master[col].isna() | (df_master[col] == True)
 df_master = df_master.merge(df_sim[['id_municipio', 'total_obitos']], on='id_municipio', how='left')
 df_master = df_master.merge(df_sinan[['id_municipio', 'total_notificacoes']], on='id_municipio', how='left')
 

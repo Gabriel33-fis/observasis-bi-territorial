@@ -8,7 +8,7 @@ import {
 } from 'chart.js';
 import { Bubble } from 'react-chartjs-2';
 import { GitCommit } from 'lucide-react';
-import { METRIC_CONFIG, REGION_COLORS, calculatePearson } from '../../constants';
+import { METRIC_CONFIG, REGION_COLORS, calculatePearson, formatMetric } from '../../constants';
 
 // Registro dos módulos do Chart.js
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend);
@@ -29,10 +29,10 @@ export default function ScatterChart({ data = [], onSelectUf, isDarkMode }) {
     else interp = 'Fraca / Dispersa';
 
     const bClass = Math.abs(r) > 0.4
-      ? 'font-mono font-bold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs'
-      : 'font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs';
+      ? 'font-mono font-bold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-sm'
+      : 'font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 text-sm';
 
-    return { pearson: r.toFixed(2), interpretation: interp, badgeClass: bClass };
+    return { pearson: r.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), interpretation: interp, badgeClass: bClass };
   }, [data, xKey, yKey]);
 
   // Montagem dos datasets agrupados por região
@@ -68,7 +68,7 @@ export default function ScatterChart({ data = [], onSelectUf, isDarkMode }) {
         position: 'top',
         labels: {
           boxWidth: 10,
-          font: { size: 10, family: 'Inter' },
+          font: { size: 12, family: 'Inter' },
           color: textColor
         }
       },
@@ -81,9 +81,9 @@ export default function ScatterChart({ data = [], onSelectUf, isDarkMode }) {
           label: (item) => {
             const s = item.raw.state;
             return [
-              `Eixo X: ${item.raw.x}`,
-              `Eixo Y: ${item.raw.y}`,
-              `PIB per capita: R$ ${Number(s.pib_per_capita).toLocaleString('pt-BR')}`
+              `${METRIC_CONFIG[xKey]?.shortLabel || xKey}: ${formatMetric(xKey, item.raw.x)}`,
+              `${METRIC_CONFIG[yKey]?.shortLabel || yKey}: ${formatMetric(yKey, item.raw.y)}`,
+              `PIB per capita: ${formatMetric('pib_per_capita', s.pib_per_capita)}`
             ];
           }
         }
@@ -95,20 +95,20 @@ export default function ScatterChart({ data = [], onSelectUf, isDarkMode }) {
           display: true,
           text: METRIC_CONFIG[xKey]?.label || xKey,
           color: textColor,
-          font: { size: 11, weight: '600' }
+          font: { size: 12, weight: '600' }
         },
         grid: { color: gridColor },
-        ticks: { color: textColor }
+        ticks: { color: textColor, font: { size: 12 } }
       },
       y: {
         title: {
           display: true,
           text: METRIC_CONFIG[yKey]?.label || yKey,
           color: textColor,
-          font: { size: 11, weight: '600' }
+          font: { size: 12, weight: '600' }
         },
         grid: { color: gridColor },
-        ticks: { color: textColor }
+        ticks: { color: textColor, font: { size: 12 } }
       }
     },
     onClick: (evt, activeEls) => {
@@ -136,12 +136,12 @@ export default function ScatterChart({ data = [], onSelectUf, isDarkMode }) {
                 Cruzamento Multidimensional (Dispersão)
               </h3>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-sm text-slate-400 mt-0.5">
               Analise correlações empíricas com cálculo instantâneo do Coeficiente de Pearson (r)
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
             <div className="flex items-center gap-1">
               <label htmlFor="scatter-x" className="text-slate-400 font-medium">Eixo X:</label>
               <select 
@@ -176,7 +176,7 @@ export default function ScatterChart({ data = [], onSelectUf, isDarkMode }) {
         </div>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
         <div className="flex items-center gap-2">
           <span className="text-slate-500 dark:text-slate-400 font-medium">
             Coeficiente de Pearson (r):
@@ -185,7 +185,7 @@ export default function ScatterChart({ data = [], onSelectUf, isDarkMode }) {
             {pearson} ({interpretation})
           </span>
         </div>
-        <span className="text-slate-400 text-[11px]">
+        <span className="text-slate-400 text-xs">
           Tamanho da bolha = <strong>PIB per Capita</strong> • Cores = <strong>Macrorregião</strong>
         </span>
       </div>
