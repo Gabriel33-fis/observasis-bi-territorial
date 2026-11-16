@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Droplet, Activity, AlertCircle, Coins } from 'lucide-react';
+import { Droplet, Activity, AlertCircle, Coins, HeartPulse } from 'lucide-react';
 
 export default function Spotlight({ selectedState, allStates = [] }) {
   // Cálculo do ranking nacional de saneamento
@@ -8,6 +8,14 @@ export default function Spotlight({ selectedState, allStates = [] }) {
     const sorted = [...allStates].sort((a, b) => (b.coleta_esgoto_pct || 0) - (a.coleta_esgoto_pct || 0));
     const index = sorted.findIndex((s) => s.uf === selectedState.uf);
     return index !== -1 ? `${index + 1}º do Brasil` : '-';
+  }, [selectedState, allStates]);
+
+  // Posição do estado no ranking nacional de expectativa de vida (1º = maior)
+  const rankExpectativa = useMemo(() => {
+    if (!selectedState || selectedState.expectativa_vida == null) return null;
+    const comDado = allStates.filter((s) => s.expectativa_vida != null);
+    const pos = comDado.filter((s) => s.expectativa_vida > selectedState.expectativa_vida).length + 1;
+    return { pos, total: comDado.length };
   }, [selectedState, allStates]);
 
   // Consumo do Índice Sintético de Vulnerabilidade (Calculado no Backend Python)
@@ -142,6 +150,31 @@ export default function Spotlight({ selectedState, allStates = [] }) {
               </strong>
             </div>
           </div>
+
+          {/* Card Expectativa de Vida */}
+          {selectedState.expectativa_vida != null && (
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-1.5">
+                  <HeartPulse className="w-3.5 h-3.5" /> Expectativa de Vida (IBGE)
+                </span>
+                <span className="text-[10px] font-semibold text-slate-400">Ao nascer, 2021</span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <div>
+                  <span className="text-lg font-black text-slate-900 dark:text-white">
+                    {Number(selectedState.expectativa_vida).toLocaleString('pt-BR', { minimumFractionDigits: 1 })}
+                  </span>
+                  <span className="text-[11px] text-slate-400 ml-1">anos</span>
+                </div>
+                {rankExpectativa && (
+                  <div className="text-right text-[11px] text-slate-400">
+                    Posição: <strong className="text-slate-700 dark:text-slate-200">{rankExpectativa.pos}º de {rankExpectativa.total}</strong>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Card PIB per Capita */}
           <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">

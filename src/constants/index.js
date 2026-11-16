@@ -68,6 +68,14 @@ export const METRIC_CONFIG = {
     min: 15000,
     max: 90000,
     invertColor: false
+  },
+  expectativa_vida: {
+    label: 'IBGE: Expectativa de Vida ao Nascer (anos)',
+    shortLabel: 'IBGE: Expectativa de Vida',
+    unit: ' anos',
+    min: 69,
+    max: 75,
+    invertColor: false
   }
 };
 

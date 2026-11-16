@@ -160,9 +160,9 @@ export default function App() {
 
   // Exportação para formato CSV
   const handleExportCsv = useCallback(() => {
-    let csv = 'UF,Estado,Regiao,Populacao,PIB_per_Capita,Esgoto_SNIS_pct,Agua_SNIS_pct,SINAN_Taxa_100k,SIM_Taxa_Mortalidade_100k,Total_Obitos,Total_Notificacoes\n';
+    let csv = 'UF,Estado,Regiao,Populacao,PIB_per_Capita,Esgoto_SNIS_pct,Agua_SNIS_pct,SINAN_Taxa_100k,SIM_Taxa_Mortalidade_100k,Total_Obitos,Total_Notificacoes,Expectativa_Vida_Anos\n';
     filteredData.forEach((d) => {
-      csv += `${d.uf},"${d.nome}",${d.regiao},${d.populacao},${d.pib_per_capita},${d.coleta_esgoto_pct},${d.atendimento_agua_pct},${d.taxa_sinan_100k},${d.taxa_mortalidade_100k},${d.total_obitos},${d.total_notificacoes}\n`;
+      csv += `${d.uf},"${d.nome}",${d.regiao},${d.populacao},${d.pib_per_capita},${d.coleta_esgoto_pct},${d.atendimento_agua_pct},${d.taxa_sinan_100k},${d.taxa_mortalidade_100k},${d.total_obitos},${d.total_notificacoes},${d.expectativa_vida ?? ''}\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
