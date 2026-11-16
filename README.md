@@ -63,7 +63,7 @@ O projeto evoluiu de uma prova de conceito estática para uma arquitetura modern
 | **Python 3.10+** | Orquestração do processamento relacional e cálculo das matrizes analíticas |
 | **Pandas & NumPy** | Limpeza, padronização de códigos IBGE (6 dígitos), modelagem dimensional e agregações ponderadas |
 | **Base dos Dados (BigQuery)** | Extração em escala de microdados dos censos e registros administrativos federais |
-| **Projeções da População (IBGE, Revisão 2024)** | Esperança de vida ao nascer por UF, lida da planilha oficial de Indicadores Implícitos |
+| **Projeções da População (IBGE, Revisão 2024)** | Mortalidade infantil e mortalidade até 5 anos por UF, lidas da planilha oficial de Indicadores Implícitos |
 | **Requests (API IBGE)** | Enriquecimento automatizado da toponímia e nomes oficiais dos 5.570 municípios |
 
 ---
@@ -176,9 +176,9 @@ observasis-bi-territorial/
 ├── processar_bi.py                        # Script do pipeline de ETL e modelagem
 ├── extrair_dados.py                       # Consultas à Base dos Dados / BigQuery
 ├── extrair_sim_drsai.py                   # Extração de mortalidade CID A00-A09
-├── extrair_expectativa_vida.py            # Esperança de vida ao nascer por UF (planilha do IBGE)
+├── extrair_mortalidade_infantil.py        # Mortalidade infantil e até 5 anos por UF (planilha do IBGE)
 ├── dados_ibge/                            # Planilha oficial do IBGE (Projeções da População, Revisão 2024)
-├── ref_expectativa_vida_uf.json           # Referência gerada: esperança de vida por UF (2021)
+├── ref_mortalidade_infantil_uf.json       # Referência gerada: mortalidade infantil e até 5 anos por UF (2021)
 ├── index.html                             # Template HTML da SPA Vite
 ├── tailwind.config.js                     # Configurações de tema e paleta de cores
 ├── vite.config.js                         # Configurações do servidor Vite

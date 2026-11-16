@@ -69,13 +69,21 @@ export const METRIC_CONFIG = {
     max: 90000,
     invertColor: false
   },
-  expectativa_vida: {
-    label: 'IBGE: Expectativa de Vida ao Nascer (anos)',
-    shortLabel: 'IBGE: Expectativa de Vida',
-    unit: ' anos',
-    min: 69,
-    max: 75,
-    invertColor: false
+  mortalidade_infantil: {
+    label: 'IBGE: Mortalidade Infantil (por mil nascidos vivos)',
+    shortLabel: 'IBGE: Mortalidade Infantil',
+    unit: '‰',
+    min: 9,
+    max: 20,
+    invertColor: true
+  },
+  mortalidade_ate_5_anos: {
+    label: 'IBGE: Mortalidade até 5 Anos (por mil nascidos vivos)',
+    shortLabel: 'IBGE: Mortalidade até 5 Anos',
+    unit: '‰',
+    min: 10,
+    max: 26,
+    invertColor: true
   }
 };
 
