@@ -139,13 +139,14 @@ df_uf = df_master.groupby(['uf', 'regiao'], as_index=False).apply(agregar_uf, in
 # Remover linhas residuais sem sigla de estado válida
 df_uf = df_uf[df_uf['uf'] != 'Outro']
 
-# Esperança de vida ao nascer por UF (IBGE, Projeções da População - Revisão 2024), ano-base 2021.
-# O arquivo de referência é gerado pelo extrair_expectativa_vida.py a partir da planilha oficial.
-# O IBGE não calcula o indicador por município, por isso ele entra apenas na base estadual.
+# Mortalidade infantil e mortalidade até 5 anos por UF (IBGE, Projeções da População - Revisão 2024), ano-base 2021.
+# O arquivo de referência é gerado pelo extrair_mortalidade_infantil.py a partir da planilha oficial.
+# O IBGE não calcula esses indicadores por município, por isso eles entram apenas na base estadual.
 import json
-with open("ref_expectativa_vida_uf.json", encoding="utf-8") as f:
-    ref_expectativa = json.load(f)
-df_uf['expectativa_vida'] = df_uf['uf'].map(ref_expectativa['valores'])
+with open("ref_mortalidade_infantil_uf.json", encoding="utf-8") as f:
+    ref_infantil = json.load(f)['valores']
+df_uf['mortalidade_infantil'] = df_uf['uf'].map(lambda uf: ref_infantil.get(uf, {}).get('mortalidade_infantil'))
+df_uf['mortalidade_ate_5_anos'] = df_uf['uf'].map(lambda uf: ref_infantil.get(uf, {}).get('mortalidade_ate_5_anos'))
 
 # Exportar JSON formatado consumido pelo React
 df_uf.to_json("dados_estados_dashboard.json", orient="records", indent=2, force_ascii=False)
